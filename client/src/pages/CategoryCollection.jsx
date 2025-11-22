@@ -22,11 +22,15 @@ const CategoryCollection = () => {
       if (category) {
         try {
           const { data } = await axios.get(`/api/category/slug/${category}`);
-          if (data.success) {
+          if (data.success && data.category) {
             setCategoryName(data.category.name);
           }
         } catch (error) {
           console.error("Error fetching category:", error);
+          // Fallback: use slug as display name
+          setCategoryName(category.split('-').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)
+          ).join(' '));
         }
       }
     };

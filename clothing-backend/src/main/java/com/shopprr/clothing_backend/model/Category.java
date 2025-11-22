@@ -13,6 +13,7 @@ public class Category {
     @Id
     private String id;
     private String name;
+    private String slug; // URL-friendly name: "shirts-polos", "bottoms", etc.
     private String description;
     private String image;
     private Boolean isActive = true;

@@ -50,6 +50,19 @@ public class CategoryController {
         }
     }
 
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<ApiResponse> getCategoryBySlug(@PathVariable String slug) {
+        try {
+            return categoryService.getCategoryBySlug(slug)
+                    .map(category -> ResponseEntity.ok(new ApiResponse(true, "Category found", category)))
+                    .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(new ApiResponse(false, "Category not found")));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error fetching category: " + e.getMessage()));
+        }
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse> createCategory(@RequestBody Category category) {
         try {
