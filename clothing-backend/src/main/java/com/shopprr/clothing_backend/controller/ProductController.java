@@ -1,5 +1,6 @@
 package com.shopprr.clothing_backend.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,13 +97,24 @@ public class ProductController {
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             Product product = mapper.readValue(productDataJson, Product.class);
             
-            // TODO: Upload images to Cloudinary and set image URLs
-            // For now, just create product without images
+            // Convert images to Base64 and store in MongoDB
             if (images != null && !images.isEmpty()) {
-                // Process images here - upload to Cloudinary
-                List<String> imageUrls = new ArrayList<>();
-                // Add placeholder logic
-                product.setImage(imageUrls);
+                List<String> imageBase64List = new ArrayList<>();
+                for (MultipartFile image : images) {
+                    try {
+                        byte[] bytes = image.getBytes();
+                        String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                        String contentType = image.getContentType();
+                        if (contentType == null || contentType.isEmpty()) {
+                            contentType = "image/jpeg"; // default to jpeg
+                        }
+                        String dataUrl = "data:" + contentType + ";base64," + base64;
+                        imageBase64List.add(dataUrl);
+                    } catch (IOException e) {
+                        System.err.println("Error processing image: " + e.getMessage());
+                    }
+                }
+                product.setImage(imageBase64List);
             }
             
             Product createdProduct = productService.createProduct(product);
@@ -198,6 +210,89 @@ public class ProductController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "Error deleting product: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/apply-discount")
+    public ResponseEntity<ApiResponse> applyDiscount(@RequestBody java.util.Map<String, Object> payload) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<String> productIds = (List<String>) payload.get("productIds");
+            Double discountPercent = ((Number) payload.get("discountPercent")).doubleValue();
+            String startDate = (String) payload.get("startDate");
+            String endDate = (String) payload.get("endDate");
+            
+            if (productIds == null || productIds.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Product IDs are required"));
+            }
+            
+            if (discountPercent == null || discountPercent <= 0 || discountPercent > 100) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Discount percent must be between 1 and 100"));
+            }
+            
+            java.time.LocalDateTime discountStartDate = java.time.LocalDateTime.parse(startDate + "T00:00:00");
+            java.time.LocalDateTime discountEndDate = java.time.LocalDateTime.parse(endDate + "T23:59:59");
+            
+            for (String productId : productIds) {
+                Product product = productService.getProductById(productId).orElse(null);
+                if (product != null) {
+                    product.setHasDiscount(true);
+                    product.setDiscountPercent(discountPercent);
+                    product.setDiscountStartDate(discountStartDate);
+                    product.setDiscountEndDate(discountEndDate);
+                    
+                    // Calculate offer price based on discount
+                    Double originalPrice = product.getPrice();
+                    Double discountAmount = originalPrice * (discountPercent / 100);
+                    Double offerPrice = originalPrice - discountAmount;
+                    product.setOfferPrice(offerPrice);
+                    
+                    product.setUpdatedAt(java.time.LocalDateTime.now());
+                    productService.updateProduct(productId, product);
+                }
+            }
+            
+            return ResponseEntity.ok(new ApiResponse(true, "Discount applied successfully to " + productIds.size() + " products"));
+        } catch (Exception e) {
+            System.err.println("Apply discount error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error applying discount: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/remove-discount")
+    public ResponseEntity<ApiResponse> removeDiscount(@RequestBody java.util.Map<String, Object> payload) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<String> productIds = (List<String>) payload.get("productIds");
+            
+            if (productIds == null || productIds.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Product IDs are required"));
+            }
+            
+            for (String productId : productIds) {
+                Product product = productService.getProductById(productId).orElse(null);
+                if (product != null) {
+                    product.setHasDiscount(false);
+                    product.setDiscountPercent(0.0);
+                    product.setDiscountStartDate(null);
+                    product.setDiscountEndDate(null);
+                    product.setOfferPrice(product.getPrice()); // Reset offer price to original price
+                    product.setUpdatedAt(java.time.LocalDateTime.now());
+                    productService.updateProduct(productId, product);
+                }
+            }
+            
+            return ResponseEntity.ok(new ApiResponse(true, "Discount removed successfully from " + productIds.size() + " products"));
+        } catch (Exception e) {
+            System.err.println("Remove discount error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error removing discount: " + e.getMessage()));
         }
     }
 }

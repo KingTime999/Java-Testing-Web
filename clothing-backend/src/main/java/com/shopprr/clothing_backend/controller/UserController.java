@@ -80,16 +80,25 @@ public class UserController {
             
             System.out.println("Setting cookie for user: " + user.getId());
             
-            // Create session cookie - removing HttpOnly for development to test
-            // NOTE: In production, use HttpOnly=true for security!
-            String cookieHeader = String.format(
-                "user_session=%s; Path=/; Max-Age=%d; SameSite=Lax",
-                user.getId(),
-                24 * 60 * 60  // 1 day
-            );
-            response.setHeader("Set-Cookie", cookieHeader);
+            // ✅ SET COOKIE với SameSite=None cho cross-origin (localhost:5173 → localhost:8080)
+            Cookie cookie = new Cookie("user_session", user.getId());
+            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 ngày
+            cookie.setPath("/");
+            cookie.setHttpOnly(false);  // false để có thể debug trong browser
+            cookie.setSecure(false);    // false vì dùng HTTP localhost
+            // SameSite=None cho phép cookie gửi cross-origin (5173 → 8080)
+            // Nhưng trong production phải dùng Secure=true với HTTPS
+            response.addCookie(cookie);
             
-            System.out.println("Cookie header set: " + cookieHeader);
+            // THÊM: Set cookie bằng header để đảm bảo SameSite=None
+            String cookieHeader = String.format(
+                "user_session=%s; Path=/; Max-Age=%d; SameSite=None",
+                user.getId(),
+                7 * 24 * 60 * 60
+            );
+            response.addHeader("Set-Cookie", cookieHeader);
+            
+            System.out.println("✅ Cookie 'user_session' set with SameSite=None for user: " + user.getId());
             
             Map<String, Object> userData = new HashMap<>();
             userData.put("id", user.getId());
@@ -160,6 +169,75 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "Error retrieving users: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<ApiResponse> updateCustomer(@RequestBody Map<String, Object> request) {
+        try {
+            String customerId = (String) request.get("customerId");
+            if (customerId == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse(false, "customerId is required"));
+            }
+            
+            User existingUser = userService.findById(customerId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            // Update fields
+            if (request.containsKey("name")) existingUser.setName((String) request.get("name"));
+            if (request.containsKey("email")) existingUser.setEmail((String) request.get("email"));
+            if (request.containsKey("phone")) existingUser.setPhone((String) request.get("phone"));
+            if (request.containsKey("address")) existingUser.setAddress((String) request.get("address"));
+            if (request.containsKey("gender")) existingUser.setGender((String) request.get("gender"));
+            if (request.containsKey("age")) {
+                Object ageObj = request.get("age");
+                if (ageObj instanceof Integer) {
+                    existingUser.setAge((Integer) ageObj);
+                } else if (ageObj instanceof String && !((String) ageObj).isEmpty()) {
+                    existingUser.setAge(Integer.parseInt((String) ageObj));
+                }
+            }
+            
+            // Update password if provided
+            if (request.containsKey("password") && request.get("password") != null) {
+                String newPassword = (String) request.get("password");
+                if (!newPassword.isEmpty()) {
+                    existingUser.setPassword(userService.hashPassword(newPassword));
+                }
+            }
+            
+            User updatedUser = userService.updateUser(customerId, existingUser);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("user", updatedUser);
+            
+            return ResponseEntity.ok(new ApiResponse(true, "Customer updated successfully", response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error updating customer: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResponse> deleteCustomer(@RequestBody Map<String, String> request) {
+        try {
+            String customerId = request.get("customerId");
+            if (customerId == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse(false, "customerId is required"));
+            }
+            
+            // Verify user exists before deleting
+            userService.findById(customerId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            userService.deleteUser(customerId);
+            
+            return ResponseEntity.ok(new ApiResponse(true, "Customer deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error deleting customer: " + e.getMessage()));
         }
     }
 

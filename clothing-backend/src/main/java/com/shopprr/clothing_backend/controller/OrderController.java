@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopprr.clothing_backend.dto.ApiResponse;
+import com.shopprr.clothing_backend.dto.OrderResponse;
 import com.shopprr.clothing_backend.model.Order;
 import com.shopprr.clothing_backend.repository.UserRepository;
 import com.shopprr.clothing_backend.service.OrderService;
@@ -65,6 +66,33 @@ public class OrderController {
         }
     }
 
+    @PostMapping("/stripe")
+    public ResponseEntity<ApiResponse> placeOrderStripe(
+            @RequestBody Map<String, Object> payload,
+            HttpServletRequest request) {
+        try {
+            // Get user from session cookie
+            String userId = getUserIdFromCookie(request);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse(false, "Please login to place order"));
+            }
+
+            // For now, return error message as Stripe is not fully implemented
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                    .body(new ApiResponse(false, "Stripe payment is not available yet. Please use Cash on Delivery."));
+            
+            // TODO: Implement Stripe payment integration
+            // 1. Create Stripe checkout session
+            // 2. Return checkout URL to frontend
+            // 3. Handle webhook for payment confirmation
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error processing Stripe payment: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/userorders")
     public ResponseEntity<ApiResponse> getUserOrders(HttpServletRequest request) {
         try {
@@ -75,7 +103,7 @@ public class OrderController {
                         .body(new ApiResponse(false, "Please login to view orders"));
             }
 
-            List<Order> orders = orderService.getUserOrders(userId);
+            List<OrderResponse> orders = orderService.getUserOrders(userId);
             
             Map<String, Object> response = new HashMap<>();
             response.put("orders", orders);
@@ -135,7 +163,7 @@ public class OrderController {
                         .body(new ApiResponse(false, "Please login"));
             }
 
-            List<Order> orders = orderService.getAllOrders();
+            List<OrderResponse> orders = orderService.getAllOrders();
             
             Map<String, Object> response = new HashMap<>();
             response.put("orders", orders);
@@ -144,6 +172,82 @@ public class OrderController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "Error retrieving orders: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResponse> deleteOrder(
+            @RequestBody Map<String, String> payload,
+            HttpServletRequest request) {
+        try {
+            String userId = getUserIdFromCookie(request);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse(false, "Please login"));
+            }
+
+            String orderId = payload.get("orderId");
+            if (orderId == null || orderId.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Order ID is required"));
+            }
+
+            orderService.deleteOrder(orderId);
+            return ResponseEntity.ok(new ApiResponse(true, "Order deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error deleting order: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<ApiResponse> updateOrderDetails(
+            @RequestBody Map<String, Object> payload,
+            HttpServletRequest request) {
+        try {
+            String userId = getUserIdFromCookie(request);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse(false, "Please login"));
+            }
+
+            String orderId = (String) payload.get("orderId");
+            if (orderId == null || orderId.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Order ID is required"));
+            }
+
+            Order order = orderService.getOrderById(orderId);
+            
+            // Update address if provided
+            if (payload.containsKey("address")) {
+                @SuppressWarnings("unchecked")
+                Map<String, String> addressMap = (Map<String, String>) payload.get("address");
+                Order.Address address = new Order.Address();
+                address.setFirstName(addressMap.get("firstName"));
+                address.setLastName(addressMap.get("lastName"));
+                address.setEmail(addressMap.get("email"));
+                address.setStreet(addressMap.get("street"));
+                address.setCity(addressMap.get("city"));
+                address.setState(addressMap.get("state"));
+                address.setZipcode(addressMap.get("zipcode"));
+                address.setCountry(addressMap.get("country"));
+                address.setPhone(addressMap.get("phone"));
+                order.setAddress(address);
+            }
+            
+            // Update status if provided
+            if (payload.containsKey("status")) {
+                order.setStatus((String) payload.get("status"));
+            }
+            
+            order.setUpdatedAt(java.time.LocalDateTime.now());
+            orderService.updateOrder(order);
+
+            return ResponseEntity.ok(new ApiResponse(true, "Order updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error updating order: " + e.getMessage()));
         }
     }
 }

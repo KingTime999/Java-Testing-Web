@@ -7,20 +7,10 @@ const Footer = () => {
       title: "Quick Links",
       links: [
         { name: "Home", path: "/" },
-        { name: "Best Sellers", path: "/collection" },
-        { name: "Offers & Deals", path: "/collection" },
-        { name: "Contact Us", path: "/contact" },
-        { name: "FAQs", path: "/contact" },
-      ],
-    },
-    {
-      title: "Need Help?",
-      links: [
-        { name: "Delivery Information", path: "/contact" },
-        { name: "Return & Refund Policy", path: "/contact" },
-        { name: "Payment Methods", path: "/contact" },
-        { name: "Track your Order", path: "/my-orders" },
-        { name: "Contact Us", path: "/contact" },
+        { name: "Collection", path: "/collection" },
+        { name: "About Us", path: "/about" },
+        { name: "Testimonial", path: "/testimonial" },
+        { name: "Contact", path: "/contact" },
       ],
     },
   ];
@@ -36,9 +26,9 @@ const Footer = () => {
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
       <div className="max-padd-container py-16">
         {/* Top Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-12 border-b border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pb-12 border-b border-gray-700">
           {/* Brand Section */}
-          <div className="lg:col-span-2">
+          <div>
             <Link to={"/"} className="inline-block mb-6">
               <h2 className="text-3xl font-bold tracking-wider">
                 VELOURA<span className="text-gray-400"></span>

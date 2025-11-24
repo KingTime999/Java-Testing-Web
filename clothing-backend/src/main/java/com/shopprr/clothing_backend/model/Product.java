@@ -40,6 +40,12 @@ public class Product {
     private Boolean popular = false;
     private Boolean inStock = true;
     
+    // Discount fields
+    private Boolean hasDiscount = false;
+    private Double discountPercent = 0.0;
+    private LocalDateTime discountStartDate;
+    private LocalDateTime discountEndDate;
+    
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 }

@@ -1,28 +1,28 @@
 # 🛍️ CLOTHING WEBSITE - VELOURA
 
-Website bán quần áo thời trang với React Frontend và Spring Boot Backend.
+Fashion clothing e-commerce website with React Frontend and Spring Boot Backend.
 
 ---
 
-## 📖 HƯỚNG DẪN SETUP TỪ ĐẦU (Cho người mới)
+## 📖 SETUP GUIDE FROM SCRATCH (For Beginners)
 
-### **1️⃣ Giải nén & Mở Project**
-- Tải và giải nén source code
-- Mở folder trong VS Code
+### **1️⃣ Extract & Open Project**
+- Download and extract source code
+- Open folder in VS Code
 
-### **2️⃣ Cài đặt MongoDB**
-- Tải MongoDB Community Server từ: https://www.mongodb.com/try/download/community
-- Cài đặt với cấu hình mặc định
-- Khởi động MongoDB service:
+### **2️⃣ Install MongoDB**
+- Download MongoDB Community Server from: https://www.mongodb.com/try/download/community
+- Install with default configuration
+- Start MongoDB service:
   ```powershell
   net start MongoDB
   ```
 
-### **3️⃣ Thêm Assets (Hình ảnh)**
-- Tải images/assets từ video hướng dẫn YouTube
-- Đặt vào folder: `client/src/assets/`
+### **3️⃣ Add Assets (Images)**
+- Download images/assets from YouTube tutorial video
+- Place in folder: `client/src/assets/`
 
-### **4️⃣ Cài đặt Dependencies**
+### **4️⃣ Install Dependencies**
 
 **Backend (Java Spring Boot):**
 ```powershell
@@ -36,16 +36,16 @@ cd "d:\van lang\hoc tap\java\Clothing-website-main\client"
 npm install
 ```
 
-### **5️⃣ Cấu hình môi trường (Tùy chọn)**
-- Tạo tài khoản miễn phí trên:
-  - **MongoDB Atlas** (nếu muốn dùng cloud database)
-  - **Cloudinary** (nếu muốn upload ảnh lên cloud)
-  - **Stripe** (nếu muốn tích hợp thanh toán)
-- Cập nhật thông tin trong file `.env` hoặc command line
+### **5️⃣ Environment Configuration (Optional)**
+- Create free accounts on:
+  - **MongoDB Atlas** (if you want to use cloud database)
+  - **Cloudinary** (if you want to upload images to cloud)
+  - **Stripe** (if you want to integrate payment)
+- Update information in `.env` file or command line
 
 ---
 
-## 🚀 CÁCH CHẠY WEBSITE
+## 🚀 HOW TO RUN THE WEBSITE
 
 ### **TERMINAL 1 - BACKEND (Spring Boot):**
 ```powershell
@@ -59,50 +59,50 @@ cd "d:\van lang\hoc tap\java\Clothing-website-main\client" ; npm run dev
 
 ---
 
-## 📋 HƯỚNG DẪN CHẠY CHI TIẾT
+## 📋 DETAILED RUNNING GUIDE
 
-### **Bước 1: Khởi động Backend**
-1. Trong VS Code, nhấn `` Ctrl + ` `` để mở Terminal
-2. Copy và paste **LỆNH TERMINAL 1** ở trên
-3. Nhấn Enter
-4. Đợi đến khi thấy: `Started ClothingBackendApplication in X.XXX seconds`
-5. Thấy `80% EXECUTING` là **ĐÚNG** - Backend đang chạy!
-   - ⚠️ **ĐỪNG ĐÓNG** terminal này!
+### **Step 1: Start Backend**
+1. In VS Code, press `` Ctrl + ` `` to open Terminal
+2. Copy and paste **TERMINAL 1 COMMAND** above
+3. Press Enter
+4. Wait until you see: `Started ClothingBackendApplication in X.XXX seconds`
+5. Seeing `80% EXECUTING` is **CORRECT** - Backend is running!
+   - ⚠️ **DO NOT CLOSE** this terminal!
 
-### **Bước 2: Khởi động Frontend**
-1. Nhấn nút **+** ở góc phải trên Terminal (hoặc `Ctrl+Shift+5`)
-2. Copy và paste **LỆNH TERMINAL 2** ở trên
-3. Nhấn Enter
-4. Đợi đến khi thấy: `Local: http://localhost:5173/`
-   - ⚠️ **ĐỪNG ĐÓNG** terminal này!
+### **Step 2: Start Frontend**
+1. Click **+** button on top right of Terminal (or `Ctrl+Shift+5`)
+2. Copy and paste **TERMINAL 2 COMMAND** above
+3. Press Enter
+4. Wait until you see: `Local: http://localhost:5173/`
+   - ⚠️ **DO NOT CLOSE** this terminal!
 
-### **Bước 3: Mở Website**
-1. Mở trình duyệt (Chrome, Edge, Firefox...)
-2. Truy cập: **http://localhost:5173**
-3. Website sẽ hiển thị! 🎉
+### **Step 3: Open Website**
+1. Open browser (Chrome, Edge, Firefox...)
+2. Navigate to: **http://localhost:5173**
+3. Website will display! 🎉
 
 ---
 
-## 🔐 TÀI KHOẢN ĐĂNG NHẬP
+## 🔐 LOGIN ACCOUNTS
 
-### 👑 **ADMIN** (Quản trị viên)
+### 👑 **ADMIN** (Administrator)
 - Email: `admin@veloura.com`
 - Password: `admin123`
-- Quyền: Quản lý toàn bộ hệ thống
+- Access: Full system management
 
-### 👤 **CUSTOMER** (Khách hàng)
+### 👤 **CUSTOMER**
 - Email: `john.anderson@example.com`
 - Password: `password123`
-- Quyền: Mua sắm, xem đơn hàng
+- Access: Shopping, view orders
 
 ---
 
-## 🛑 DỪNG WEBSITE
+## 🛑 STOP WEBSITE
 
-**Cách 1:** Nhấn `Ctrl+C` trong mỗi terminal
-**Cách 2:** Click icon 🗑️ (Kill Terminal) ở góc phải trên
+**Method 1:** Press `Ctrl+C` in each terminal
+**Method 2:** Click 🗑️ icon (Kill Terminal) on top right
 
-### Dừng tất cả Java processes (nếu cần):
+### Stop all Java processes (if needed):
 ```powershell
 Get-Process -Name java -ErrorAction SilentlyContinue | Stop-Process -Force
 ```
@@ -113,18 +113,18 @@ Get-Process -Name java -ErrorAction SilentlyContinue | Stop-Process -Force
 
 ### **MongoDB:** `shopprr` (localhost:27017)
 ### **Collections:**
-- ✅ `users` - Người dùng (Admin, Customer)
-- ✅ `products` - Sản phẩm
-- ✅ `categories` - Danh mục sản phẩm
-- ✅ `orders` - Đơn hàng
-- ✅ `reviews` - Đánh giá sản phẩm
-- ✅ `blogs` - Bài viết blog
-- ✅ `testimonials` - Phản hồi khách hàng
-- ✅ `contacts` - Liên hệ
+- ✅ `users` - Users (Admin, Customer)
+- ✅ `products` - Products
+- ✅ `categories` - Product categories
+- ✅ `orders` - Orders
+- ✅ `reviews` - Product reviews
+- ✅ `blogs` - Blog posts
+- ✅ `testimonials` - Customer testimonials
+- ✅ `contacts` - Contact messages
 
 ---
 
-## ⚙️ CÔNG NGHỆ SỬ DỤNG
+## ⚙️ TECHNOLOGY STACK
 
 ### **Backend:**
 - ☕ **Spring Boot** 3.5.7
@@ -147,73 +147,73 @@ Get-Process -Name java -ErrorAction SilentlyContinue | Stop-Process -Force
 
 ---
 
-## ❌ XỬ LÝ LỖI THƯỜNG GẶP
+## ❌ TROUBLESHOOTING
 
-### **🔴 Lỗi: Port 8080 đã được sử dụng**
+### **🔴 Error: Port 8080 already in use**
 ```powershell
-# Kill tất cả Java processes
+# Kill all Java processes
 Get-Process -Name java -ErrorAction SilentlyContinue | Stop-Process -Force
 ```
 
-### **🔴 Lỗi: Port 5173 đã được sử dụng**
+### **🔴 Error: Port 5173 already in use**
 ```powershell
-# Kill tất cả Node processes
+# Kill all Node processes
 Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force
 ```
 
-### **🔴 Lỗi: MongoDB không chạy**
+### **🔴 Error: MongoDB not running**
 ```powershell
-# Khởi động MongoDB service
+# Start MongoDB service
 net start MongoDB
 ```
 
-### **🔴 Lỗi: Cannot connect to MongoDB**
-1. Kiểm tra MongoDB đang chạy:
+### **🔴 Error: Cannot connect to MongoDB**
+1. Check if MongoDB is running:
    ```powershell
    Get-Service MongoDB
    ```
-2. Nếu chưa chạy, start service:
+2. If not running, start service:
    ```powershell
    net start MongoDB
    ```
 
-### **🔴 Lỗi: Gradle build failed**
+### **🔴 Error: Gradle build failed**
 ```powershell
-# Clean và rebuild
+# Clean and rebuild
 cd "d:\van lang\hoc tap\java\Clothing-website-main\clothing-backend"
 .\gradlew.bat clean build
 ```
 
-### **🟢 Kiểm tra Backend có chạy không:**
+### **🟢 Check if Backend is running:**
 ```powershell
 Test-NetConnection localhost -Port 8080
 ```
 
-### **🟢 Kiểm tra Frontend có chạy không:**
+### **🟢 Check if Frontend is running:**
 ```powershell
 Test-NetConnection localhost -Port 5173
 ```
 
-### **🟢 Kiểm tra MongoDB có chạy không:**
+### **🟢 Check if MongoDB is running:**
 ```powershell
 Test-NetConnection localhost -Port 27017
 ```
 
 ---
 
-## 💡 LƯU Ý QUAN TRỌNG
+## 💡 IMPORTANT NOTES
 
-- ✅ Backend hiển thị `80% EXECUTING` là **BÌNH THƯỜNG** - nghĩa là đang chạy
-- ✅ **ĐỪNG ĐÓNG** 2 terminal khi website đang chạy
-- ✅ Backend khởi động mất ~30-40 giây
-- ✅ Frontend khởi động mất ~5-10 giây
-- ✅ Nhấn `Ctrl+Shift+R` trong browser để hard refresh (xóa cache)
-- ✅ Nếu sửa code Backend, cần restart terminal Backend
-- ✅ Nếu sửa code Frontend, Vite tự động reload (Hot Module Replacement)
+- ✅ Backend showing `80% EXECUTING` is **NORMAL** - it means it's running
+- ✅ **DO NOT CLOSE** 2 terminals while website is running
+- ✅ Backend startup takes ~30-40 seconds
+- ✅ Frontend startup takes ~5-10 seconds
+- ✅ Press `Ctrl+Shift+R` in browser to hard refresh (clear cache)
+- ✅ If you modify Backend code, need to restart Backend terminal
+- ✅ If you modify Frontend code, Vite auto-reloads (Hot Module Replacement)
 
 ---
 
-## 📁 CẤU TRÚC DỰ ÁN
+## 📁 PROJECT STRUCTURE
 
 ```
 Clothing-website-main/
@@ -280,322 +280,62 @@ Clothing-website-main/
 │   ├── gradlew.bat          # Gradle wrapper (Windows)
 │   └── settings.gradle      # Gradle settings
 │
-├── 📄 README.md               # File này - Hướng dẫn đầy đủ
-├── 📄 Setup Guide.txt        # (Đã được gộp vào README)
-└── 📄 CHAY-WEB.txt          # (Đã được gộp vào README)
+├── 📄 README.md               # This file - Complete guide
+├── 📄 Setup Guide.txt        # (Merged into README)
+└── 📄 CHAY-WEB.txt          # (Merged into README)
 ```
 
 ---
 
-## 🎯 TÍNH NĂNG CHÍNH
+## 🎯 MAIN FEATURES
 
-### **🛍️ Khách hàng (Customer):**
-- ✅ Xem danh sách sản phẩm với phân trang
-- ✅ Tìm kiếm sản phẩm theo tên
-- ✅ Lọc sản phẩm theo danh mục
-- ✅ Xem chi tiết sản phẩm
-- ✅ Thêm sản phẩm vào giỏ hàng
-- ✅ Cập nhật số lượng trong giỏ hàng
-- ✅ Xóa sản phẩm khỏi giỏ hàng
-- ✅ Đặt hàng (COD - Cash on Delivery)
-- ✅ Xem lịch sử đơn hàng
-- ✅ Theo dõi trạng thái đơn hàng
-- ✅ Đánh giá sản phẩm
-- ✅ Đăng nhập / Đăng ký
-- ✅ Cập nhật thông tin cá nhân
-- ✅ Liên hệ qua form
+### **🛍️ Customer:**
+- ✅ View product list with pagination
+- ✅ Search products by name
+- ✅ Filter products by category
+- ✅ View product details
+- ✅ Add products to cart
+- ✅ Update quantity in cart
+- ✅ Remove products from cart
+- ✅ Place order (COD - Cash on Delivery)
+- ✅ View order history
+- ✅ Track order status
+- ✅ Review products
+- ✅ Login / Register
+- ✅ Update profile information
+- ✅ Contact via form
 
-### **👑 Quản trị viên (Admin):**
-- ✅ **Quản lý sản phẩm:**
-  - Thêm sản phẩm mới (với upload ảnh)
-  - Sửa thông tin sản phẩm
-  - Xóa sản phẩm
-  - Xem danh sách sản phẩm
-- ✅ **Quản lý đơn hàng:**
-  - Xem tất cả đơn hàng
-  - Cập nhật trạng thái đơn hàng (Pending → Packing → Shipped → Delivered)
-  - Xóa đơn hàng
-- ✅ **Quản lý khách hàng:**
-  - Xem danh sách khách hàng
-  - Thêm khách hàng mới
-  - Sửa thông tin khách hàng
-  - Xóa khách hàng
-- ✅ **Báo cáo & Thống kê:**
-  - Tổng doanh thu
-  - Tổng số đơn hàng
-  - Tổng số khách hàng
-  - Tổng số sản phẩm
-  - Biểu đồ doanh thu theo tháng (Bar Chart)
-  - Biểu đồ doanh thu theo danh mục (Pie Chart)
-  - Danh sách đơn hàng gần nhất
-  - Sản phẩm bán chạy nhất
+### **👑 Admin:**
+- ✅ **Product Management:**
+  - Add new product (with image upload)
+  - Edit product information
+  - Delete product
+  - View product list
+- ✅ **Order Management:**
+  - View all orders
+  - Update order status (Pending → Packing → Shipped → Delivered)
+  - Delete order
+- ✅ **Customer Management:**
+  - View customer list
+  - Add new customer
+  - Edit customer information
+  - Delete customer
+- ✅ **Reports & Analytics:**
+  - Total revenue
+  - Total orders
+  - Total customers
+  - Total products
+  - Monthly revenue chart (Bar Chart)
+  - Revenue by category chart (Pie Chart)
+  - Recent orders list
+  - Best-selling products
 
-### **📝 Tính năng khác:**
+### **📝 Other Features:**
 - ✅ Blog posts
-- ✅ Testimonials (Phản hồi khách hàng)
+- ✅ Testimonials
 - ✅ Contact form
 - ✅ Responsive design (Mobile, Tablet, Desktop)
 - ✅ Dark/Light mode ready
 - ✅ Loading states
 - ✅ Error handling
 - ✅ Toast notifications
-
----
-
-## 🔒 BẢO MẬT
-
-- 🔐 **JWT Authentication** - Token-based authentication
-- 🍪 **HTTP-only Cookies** - Secure cookie storage
-- 🔑 **BCrypt Password Hashing** - Secure password encryption
-- 🛡️ **CORS Protection** - Cross-Origin Resource Sharing
-- ✅ **Input Validation** - Server-side validation
-- 🚫 **XSS Protection** - Prevent Cross-Site Scripting
-
----
-
-## 🌐 API ENDPOINTS
-
-### **👤 User APIs:**
-```
-POST   /api/user/register       # Đăng ký
-POST   /api/user/login          # Đăng nhập
-POST   /api/user/logout         # Đăng xuất
-GET    /api/user/authenticated  # Kiểm tra đăng nhập
-POST   /api/user/update         # Cập nhật thông tin
-POST   /api/user/delete         # Xóa user
-GET    /api/user/list-all       # Lấy danh sách user (Admin)
-```
-
-### **🛍️ Product APIs:**
-```
-GET    /api/product/list        # Lấy danh sách sản phẩm
-GET    /api/product/single      # Lấy chi tiết sản phẩm
-POST   /api/product/add         # Thêm sản phẩm (Admin)
-POST   /api/product/update      # Cập nhật sản phẩm (Admin)
-POST   /api/product/delete      # Xóa sản phẩm (Admin)
-POST   /api/product/remove      # Xóa sản phẩm (Admin - alias)
-```
-
-### **📦 Order APIs:**
-```
-POST   /api/order/cod           # Đặt hàng COD
-POST   /api/order/userorders    # Lấy đơn hàng của user
-POST   /api/order/list          # Lấy tất cả đơn hàng (Admin)
-POST   /api/order/status        # Cập nhật trạng thái (Admin)
-```
-
-### **🛒 Cart APIs:**
-```
-POST   /api/cart/add            # Thêm vào giỏ
-POST   /api/cart/update         # Cập nhật giỏ hàng
-GET    /api/cart/get            # Lấy giỏ hàng
-```
-
-### **📝 Category APIs:**
-```
-GET    /api/category/list       # Lấy danh sách danh mục
-```
-
----
-
-## 🐛 DEBUG & TROUBLESHOOTING
-
-### **Kiểm tra logs Backend:**
-- Xem terminal đang chạy Backend
-- Log sẽ hiển thị tất cả API requests
-- Ví dụ: `Securing POST /api/order/list`
-
-### **Kiểm tra logs Frontend:**
-- Mở Console trong trình duyệt (F12)
-- Tab "Console" sẽ hiển thị errors/warnings
-- Tab "Network" sẽ hiển thị API calls
-
-### **Debug MongoDB:**
-```powershell
-# Connect to MongoDB shell
-mongosh
-
-# Chọn database
-use shopprr
-
-# Xem collections
-show collections
-
-# Xem users
-db.users.find().pretty()
-
-# Xem products
-db.products.find().pretty()
-
-# Xem orders
-db.orders.find().pretty()
-```
-
----
-
-## 📚 TÀI LIỆU THAM KHẢO
-
-- **Spring Boot:** https://spring.io/projects/spring-boot
-- **React:** https://react.dev/
-- **Vite:** https://vitejs.dev/
-- **TailwindCSS:** https://tailwindcss.com/
-- **MongoDB:** https://www.mongodb.com/docs/
-- **Recharts:** https://recharts.org/
-
----
-
-## 🤝 HỖ TRỢ
-
-- 💬 Nếu cần trợ giúp, hãy liên hệ qua:
-  - Email: support@veloura.com
-  - Video tutorial trên YouTube
-- 📖 Đọc kỹ README này trước khi hỏi
-- 🐛 Report bugs qua GitHub Issues
-
----
-
-## 📝 GHI CHÚ PHIÊN BẢN
-
-### Version 1.0.0 (Current)
-- ✅ Hoàn thành tất cả tính năng cơ bản
-- ✅ Admin panel đầy đủ chức năng
-- ✅ Report & Analytics với biểu đồ
-- ✅ Responsive design
-- ✅ Authentication & Authorization
-- ✅ MongoDB integration
-- ✅ REST API hoàn chỉnh
-
----
-
-**🎉 Chúc bạn code vui vẻ và thành công! 🚀**
-
----
-
-*📅 Last Updated: November 20, 2025*
-*👨‍💻 Developed with ❤️ using Spring Boot & React*
-- Email: `staff@veloura.com`
-- Password: `password123`
-
-### 👤 **CUSTOMER**
-- Email: `john.anderson@example.com`
-- Password: `password123`
-
----
-
-## 🛑 DỪNG WEBSITE
-
-- Nhấn `Ctrl+C` trong terminal đang chạy
-- Hoặc click icon 🗑️ (Kill Terminal)
-
----
-
-## 💾 DATABASE
-
-### **MongoDB:** `shopprr` (localhost:27017)
-### **Collections:**
-- ✅ `blogs`
-- ✅ `categories`
-- ✅ `contacts`
-- ✅ `orders`
-- ✅ `products`
-- ✅ `reviews`
-- ✅ `testimonials`
-- ✅ `users`
-
----
-
-## ⚙️ CÔNG NGHỆ SỬ DỤNG
-
-### **Backend:**
-- Spring Boot 3.5.7
-- Java 21
-- MongoDB
-- Gradle
-- Port: 8080
-
-### **Frontend:**
-- React 19.1.0
-- Vite 6.3.5
-- TailwindCSS
-- Axios
-- Port: 5173
-
----
-
-## ❌ XỬ LÝ LỖI
-
-### **Lỗi: Port 8080 đã được sử dụng**
-```powershell
-Get-Process -Name java -ErrorAction SilentlyContinue | Stop-Process -Force
-```
-
-### **Lỗi: Port 5173 đã được sử dụng**
-```powershell
-Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force
-```
-
-### **Lỗi: MongoDB không chạy**
-```powershell
-net start MongoDB
-```
-
-### **Kiểm tra Backend có chạy không:**
-```powershell
-Test-NetConnection localhost -Port 8080
-```
-
-### **Kiểm tra Frontend có chạy không:**
-```powershell
-Test-NetConnection localhost -Port 5173
-```
-
----
-
-## 💡 LƯU Ý QUAN TRỌNG
-
-- ✅ Backend hiển thị `80% EXECUTING` là **BÌNH THƯỜNG** - nghĩa là đang chạy
-- ✅ **ĐỪNG ĐÓNG** 2 terminal khi website đang chạy
-- ✅ Backend khởi động ~30-40 giây
-- ✅ Frontend khởi động ~5 giây
-- ✅ Nhấn `Ctrl+Shift+R` trong browser để hard refresh
-
----
-
-## 📁 CẤU TRÚC DỰ ÁN
-
-```
-Clothing-website-main/
-├── client/                    # React Frontend
-│   ├── src/
-│   │   ├── components/       # React components
-│   │   ├── pages/           # Pages
-│   │   └── context/         # Context API
-│   └── package.json
-├── clothing-backend/         # Spring Boot Backend
-│   ├── src/
-│   │   ├── main/java/       # Java source code
-│   │   └── main/resources/  # Configuration
-│   ├── build.gradle         # Gradle config
-│   └── gradlew.bat         # Gradle wrapper
-└── README.md               # File này
-```
-
----
-
-## 🎯 TÍNH NĂNG
-
-- ✅ Xem danh sách sản phẩm
-- ✅ Xem chi tiết sản phẩm
-- ✅ Tìm kiếm và lọc sản phẩm
-- ✅ Giỏ hàng
-- ✅ Đặt hàng
-- ✅ Đăng nhập / Đăng ký
-- ✅ Quản lý đơn hàng (Admin)
-- ✅ Quản lý sản phẩm (Admin)
-- ✅ Reviews & Testimonials
-- ✅ Blog
-- ✅ Contact form
-
----
-
-**Chúc bạn code vui vẻ! 🎉**

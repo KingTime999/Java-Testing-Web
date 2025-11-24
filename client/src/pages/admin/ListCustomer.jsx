@@ -1,19 +1,20 @@
-import React, { useContext, useEffect, useState } from "react" // import hooks cần thiết
-import { toast } from "react-hot-toast" // import toast để hiển thị thông báo
+import React, { useContext, useEffect, useState } from "react" // import necessary hooks
+import { toast } from "react-hot-toast" // import toast for notifications
 import { ShopContext } from "../../context/ShopContext" // import ShopContext
-import { FiEye, FiEyeOff, FiUserPlus, FiX, FiEdit2, FiTrash2 } from "react-icons/fi" // import icons cho show/hide password, thêm user, edit và delete
+import { FiEye, FiEyeOff, FiUserPlus, FiX, FiEdit2, FiTrash2, FiSearch } from "react-icons/fi" // import icons for show/hide password, add user, edit and delete
 
-// Component hiển thị danh sách khách hàng (Admin)
+// Component to display customer list (Admin)
 const ListCustomer = () => {
-  const { axios } = useContext(ShopContext) // lấy axios từ context
-  const [customers, setCustomers] = useState([]) // state chứa mảng khách hàng
-  const [loading, setLoading] = useState(true) // state loading
-  const [showPasswords, setShowPasswords] = useState({}) // state để track password nào đang hiển thị
-  const [showAddModal, setShowAddModal] = useState(false) // state để hiển thị/ẩn modal thêm khách hàng
-  const [showEditModal, setShowEditModal] = useState(false) // state để hiển thị/ẩn modal sửa khách hàng
-  const [editingCustomer, setEditingCustomer] = useState(null) // state lưu customer đang được sửa
+  const { axios } = useContext(ShopContext) // get axios from context
+  const [customers, setCustomers] = useState([]) // state containing customer array
+  const [loading, setLoading] = useState(true) // loading state
+  const [showPasswords, setShowPasswords] = useState({}) // state to track which passwords are visible
+  const [showAddModal, setShowAddModal] = useState(false) // state to show/hide add customer modal
+  const [showEditModal, setShowEditModal] = useState(false) // state to show/hide edit customer modal
+  const [editingCustomer, setEditingCustomer] = useState(null) // state storing customer being edited
+  const [searchTerm, setSearchTerm] = useState("") // state for search functionality
   
-  // State cho form thêm khách hàng
+  // State for add customer form
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,26 +25,26 @@ const ListCustomer = () => {
     address: ""
   })
 
-  // Hàm fetchAllCustomers: lấy danh sách khách hàng từ server
+  // fetchAllCustomers function: get customer list from server
   const fetchAllCustomers = async () => {
     try {
       setLoading(true)
-      const { data } = await axios.get("/api/user/list-all") // gọi API
+      const { data } = await axios.get("/api/user/list-all") // call API
       if (data.success) {
-        setCustomers(data.data.users) // lưu customers vào state từ data.data.users
+        setCustomers(data.data.users) // save customers to state from data.data.users
         console.log("✅ Loaded customers:", data.data.users.length)
       } else {
         toast.error(data.message)
       }
     } catch (error) {
       console.log("❌ Fetch error:", error)
-      toast.error(error.message || "Lỗi khi tải danh sách khách hàng")
+      toast.error(error.message || "Error loading customer list")
     } finally {
       setLoading(false)
     }
   }
 
-  // Toggle hiển thị password cho một customer cụ thể
+  // Toggle password visibility for a specific customer
   const togglePasswordVisibility = (customerId) => {
     setShowPasswords(prev => ({
       ...prev,
@@ -51,7 +52,7 @@ const ListCustomer = () => {
     }))
   }
 
-  // Hàm xử lý thay đổi input trong form
+  // Function to handle input changes in form
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -60,34 +61,34 @@ const ListCustomer = () => {
     }))
   }
 
-  // Hàm thêm khách hàng mới
+  // Function to add new customer
   const handleAddCustomer = async (e) => {
     e.preventDefault()
     
-    // Validate dữ liệu
+    // Validate data
     if (!formData.name || !formData.email || !formData.password) {
-      toast.error("Vui lòng điền đầy đủ họ tên, email và mật khẩu")
+      toast.error("Please fill in full name, email and password")
       return
     }
 
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      toast.error("Email không hợp lệ")
+      toast.error("Invalid email format")
       return
     }
 
     // Validate password length
     if (formData.password.length < 8) {
-      toast.error("Mật khẩu phải có ít nhất 8 ký tự")
+      toast.error("Password must be at least 8 characters")
       return
     }
 
     try {
       const { data } = await axios.post("/api/user/register", formData)
       if (data.success) {
-        toast.success("Thêm khách hàng thành công!")
-        setShowAddModal(false) // đóng modal
+        toast.success("Customer added successfully!")
+        setShowAddModal(false) // close modal
         // Reset form
         setFormData({
           name: "",
@@ -98,23 +99,23 @@ const ListCustomer = () => {
           phone: "",
           address: ""
         })
-        fetchAllCustomers() // reload danh sách
+        fetchAllCustomers() // reload list
       } else {
         toast.error(data.message)
       }
     } catch (error) {
       console.log("❌ Add customer error:", error)
-      toast.error(error.response?.data?.message || error.message || "Lỗi khi thêm khách hàng")
+      toast.error(error.response?.data?.message || error.message || "Error adding customer")
     }
   }
 
-  // Hàm mở modal sửa và load dữ liệu customer
+  // Function to open edit modal and load customer data
   const handleEditClick = (customer) => {
     setEditingCustomer(customer)
     setFormData({
       name: customer.name || "",
       email: customer.email || "",
-      password: "", // không load password cũ
+      password: "", // don't load old password
       age: customer.age || "",
       gender: customer.gender || "",
       phone: customer.phone || "",
@@ -123,33 +124,42 @@ const ListCustomer = () => {
     setShowEditModal(true)
   }
 
-  // Hàm sửa thông tin khách hàng
+  // Function to update customer information
   const handleUpdateCustomer = async (e) => {
     e.preventDefault()
     
-    // Validate dữ liệu
+    // Validate data
     if (!formData.name || !formData.email) {
-      toast.error("Vui lòng điền đầy đủ họ tên và email")
+      toast.error("Please fill in full name and email")
       return
     }
 
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      toast.error("Email không hợp lệ")
+      toast.error("Invalid email format")
       return
     }
 
-    // Nếu có nhập password mới, validate độ dài
+    // If new password entered, validate length
     if (formData.password && formData.password.length < 8) {
-      toast.error("Mật khẩu phải có ít nhất 8 ký tự")
+      toast.error("Password must be at least 8 characters")
+      return
+    }
+
+    // Check if editingCustomer exists
+    if (!editingCustomer || (!editingCustomer._id && !editingCustomer.id)) {
+      toast.error("Customer ID not found. Please try again.")
       return
     }
 
     try {
-      // Tạo object chỉ chứa các field có giá trị
+      // Get customer ID (support both _id and id formats)
+      const customerId = editingCustomer._id || editingCustomer.id
+      
+      // Create object containing only fields with values
       const updateData = {
-        customerId: editingCustomer._id,
+        customerId: customerId,
         name: formData.name,
         email: formData.email,
         age: formData.age || undefined,
@@ -158,14 +168,15 @@ const ListCustomer = () => {
         address: formData.address || undefined
       }
       
-      // Chỉ thêm password nếu user nhập mới
+      // Only add password if user entered new one
       if (formData.password) {
         updateData.password = formData.password
       }
 
+      console.log("Sending update request with data:", updateData)
       const { data } = await axios.post("/api/user/update", updateData)
       if (data.success) {
-        toast.success("Cập nhật khách hàng thành công!")
+        toast.success("Customer updated successfully!")
         setShowEditModal(false)
         setEditingCustomer(null)
         // Reset form
@@ -178,89 +189,105 @@ const ListCustomer = () => {
           phone: "",
           address: ""
         })
-        fetchAllCustomers() // reload danh sách
+        fetchAllCustomers() // reload list
       } else {
         toast.error(data.message)
       }
     } catch (error) {
       console.log("❌ Update customer error:", error)
-      toast.error(error.response?.data?.message || error.message || "Lỗi khi cập nhật khách hàng")
+      toast.error(error.response?.data?.message || error.message || "Error updating customer")
     }
   }
 
-  // Hàm xóa khách hàng
+  // Function to delete customer
   const handleDeleteCustomer = async (customerId, customerName) => {
-    // Xác nhận trước khi xóa
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa khách hàng "${customerName}"?`)) {
+    // Confirm before deleting
+    if (!window.confirm(`Are you sure you want to delete customer "${customerName}"?`)) {
       return
     }
 
     try {
       const { data } = await axios.post("/api/user/delete", { customerId })
       if (data.success) {
-        toast.success("Xóa khách hàng thành công!")
-        fetchAllCustomers() // reload danh sách
+        toast.success("Customer deleted successfully!")
+        fetchAllCustomers() // reload list
       } else {
         toast.error(data.message)
       }
     } catch (error) {
       console.log("❌ Delete customer error:", error)
-      toast.error(error.response?.data?.message || error.message || "Lỗi khi xóa khách hàng")
+      toast.error(error.response?.data?.message || error.message || "Error deleting customer")
     }
   }
 
   useEffect(() => {
-    fetchAllCustomers() // gọi khi component mount
+    fetchAllCustomers() // call when component mounts
   }, [])
 
-  // Hiển thị loading spinner
+  // Display loading spinner
   if (loading) {
     return (
       <div className="px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl flex items-center justify-center custom-scrollbar">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-          <p className="mt-3 text-gray-600">Đang tải danh sách khách hàng...</p>
+          <p className="mt-3 text-gray-600">Loading customer list...</p>
         </div>
       </div>
     )
   }
 
-  // Hiển thị thông báo khi chưa có khách hàng
+  // Display message when there are no customers
   if (!loading && customers.length === 0) {
     return (
       <div className="px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl flex items-center justify-center custom-scrollbar">
         <div className="text-center bg-white p-8 rounded-xl shadow-sm">
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">Chưa có khách hàng nào</h3>
-          <p className="text-gray-500">Danh sách khách hàng sẽ hiển thị ở đây khi có người đăng ký.</p>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">No customers yet</h3>
+          <p className="text-gray-500">Customer list will appear here when people register.</p>
         </div>
       </div>
     )
   }
+  // Filter customers based on search term
+  const filteredCustomers = customers.filter(customer => {
+    const searchLower = searchTerm.toLowerCase()
+    return !searchTerm || 
+      customer.name?.toLowerCase().includes(searchLower) ||
+      customer.email?.toLowerCase().includes(searchLower)
+  })
 
   return (
     <div className="px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary lg:w-4/5 rounded-xl flex flex-col custom-scrollbar">
-      {/* Header với nút thêm khách hàng */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Danh Sách Khách Hàng</h2>
-          <p className="text-gray-600 text-sm mt-1">Tổng số: {customers.length} khách hàng</p>
-        </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors"
-        >
-          <FiUserPlus size={18} />
-          <span className="hidden sm:inline">Thêm Khách Hàng</span>
-        </button>
+      {/* Header */}
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">Customer List</h2>
+        <p className="text-gray-600 text-sm mt-1">Total: {customers.length} customers</p>
       </div>
 
-      {/* Modal thêm khách hàng */}
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search by Order ID, customer name, phone or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+          />
+        </div>
+        <p className="text-sm text-gray-600 mt-2">
+          Showing <span className="font-semibold">{filteredCustomers.length}</span> customer(s)
+          {searchTerm && ` for "${searchTerm}"`}
+        </p>
+      </div>
+
+      {/* Add Customer Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={(e) => e.stopPropagation()}>
-            {/* Header modal */}
+            {/* Modal header */}
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Thêm Khách Hàng Mới</h3>
+              <h3 className="text-xl font-bold text-gray-800">Add New Customer</h3>
               <button
                 onClick={() => setShowAddModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -269,20 +296,20 @@ const ListCustomer = () => {
               </button>
             </div>
 
-            {/* Form thêm khách hàng */}
+            {/* Add customer form */}
             <form onSubmit={handleAddCustomer} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Họ và tên */}
+                {/* Full name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Họ và tên <span className="text-red-500">*</span>
+                    Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Nhập họ và tên"
+                    placeholder="Enter full name"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                     required
                   />
@@ -307,41 +334,41 @@ const ListCustomer = () => {
                 {/* Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mật khẩu <span className="text-red-500">*</span>
+                    Password <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    placeholder="Tối thiểu 8 ký tự"
+                    placeholder="Minimum 8 characters"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                     required
                     minLength={8}
                   />
                 </div>
 
-                {/* Tuổi */}
+                {/* Age */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tuổi
+                    Age
                   </label>
                   <input
                     type="number"
                     name="age"
                     value={formData.age}
                     onChange={handleInputChange}
-                    placeholder="Nhập tuổi"
+                    placeholder="Enter age"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                     min="1"
                     max="150"
                   />
                 </div>
 
-                {/* Giới tính */}
+                {/* Gender */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Giới tính
+                    Gender
                   </label>
                   <select
                     name="gender"
@@ -349,17 +376,17 @@ const ListCustomer = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                   >
-                    <option value="">Chọn giới tính</option>
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                    <option value="Khác">Khác</option>
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
-                {/* Số điện thoại */}
+                {/* Phone Number */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Số điện thoại
+                    Phone Number
                   </label>
                   <input
                     type="tel"
@@ -372,16 +399,16 @@ const ListCustomer = () => {
                 </div>
               </div>
 
-              {/* Địa chỉ */}
+              {/* Address */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Địa chỉ
+                  Address
                 </label>
                 <textarea
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="Nhập địa chỉ đầy đủ"
+                  placeholder="Enter full address"
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent resize-none"
                 />
@@ -394,13 +421,13 @@ const ListCustomer = () => {
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Hủy
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors"
                 >
-                  Thêm Khách Hàng
+                  Add Customer
                 </button>
               </div>
             </form>
@@ -408,13 +435,13 @@ const ListCustomer = () => {
         </div>
       )}
 
-      {/* Modal sửa khách hàng */}
+      {/* Edit Customer Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowEditModal(false)}>
           <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={(e) => e.stopPropagation()}>
-            {/* Header modal */}
+            {/* Modal header */}
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Sửa Thông Tin Khách Hàng</h3>
+              <h3 className="text-xl font-bold text-gray-800">Edit Customer Information</h3>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -423,20 +450,20 @@ const ListCustomer = () => {
               </button>
             </div>
 
-            {/* Form sửa khách hàng */}
+            {/* Edit customer form */}
             <form onSubmit={handleUpdateCustomer} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Họ và tên */}
+                {/* Full name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Họ và tên <span className="text-red-500">*</span>
+                    Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Nhập họ và tên"
+                    placeholder="Enter full name"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                     required
                   />
@@ -461,40 +488,40 @@ const ListCustomer = () => {
                 {/* Password */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mật khẩu mới <span className="text-gray-500">(để trống nếu không đổi)</span>
+                    New Password <span className="text-gray-500">(leave blank if not changing)</span>
                   </label>
                   <input
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    placeholder="Tối thiểu 8 ký tự"
+                    placeholder="Minimum 8 characters"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                     minLength={8}
                   />
                 </div>
 
-                {/* Tuổi */}
+                {/* Age */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tuổi
+                    Age
                   </label>
                   <input
                     type="number"
                     name="age"
                     value={formData.age}
                     onChange={handleInputChange}
-                    placeholder="Nhập tuổi"
+                    placeholder="Enter age"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                     min="1"
                     max="150"
                   />
                 </div>
 
-                {/* Giới tính */}
+                {/* Gender */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Giới tính
+                    Gender
                   </label>
                   <select
                     name="gender"
@@ -502,17 +529,17 @@ const ListCustomer = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                   >
-                    <option value="">Chọn giới tính</option>
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                    <option value="Khác">Khác</option>
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
-                {/* Số điện thoại */}
+                {/* Phone Number */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Số điện thoại
+                    Phone Number
                   </label>
                   <input
                     type="tel"
@@ -525,16 +552,16 @@ const ListCustomer = () => {
                 </div>
               </div>
 
-              {/* Địa chỉ */}
+              {/* Address */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Địa chỉ
+                  Address
                 </label>
                 <textarea
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="Nhập địa chỉ đầy đủ"
+                  placeholder="Enter full address"
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent resize-none"
                 />
@@ -547,13 +574,13 @@ const ListCustomer = () => {
                   onClick={() => setShowEditModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Hủy
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors"
                 >
-                  Cập Nhật
+                  Update
                 </button>
               </div>
             </form>
@@ -561,28 +588,28 @@ const ListCustomer = () => {
         </div>
       )}
 
-      {/* Container với scrollbar ngang cố định */}
+      {/* Container with fixed horizontal scrollbar */}
       <div className="overflow-x-auto overflow-y-scroll flex-1 custom-scrollbar">
-        {/* Danh sách khách hàng dạng cards */}
+        {/* Customer list as cards */}
         <div className="flex flex-col gap-4 min-w-[800px]">
-        {customers.map((customer) => (
+        {filteredCustomers.map((customer) => (
           <div key={customer._id} className="bg-white p-4 rounded-lg shadow-sm">
-            {/* Header card với nút Edit và Delete */}
+            {/* Card header with Edit and Delete buttons */}
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
               <h4 className="text-sm font-semibold text-gray-800">ID: {customer._id ? customer._id.slice(-8) : 'N/A'}</h4>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleEditClick(customer)}
                   className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors text-xs font-medium"
-                  title="Sửa khách hàng"
+                  title="Edit customer"
                 >
                   <FiEdit2 size={14} />
                   <span>Edit</span>
                 </button>
                 <button
-                  onClick={() => handleDeleteCustomer(customer._id, customer.name)}
+                  onClick={() => handleDeleteCustomer(customer._id || customer.id, customer.name)}
                   className="flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors text-xs font-medium"
-                  title="Xóa khách hàng"
+                  title="Delete customer"
                 >
                   <FiTrash2 size={14} />
                   <span>Delete</span>
@@ -591,47 +618,47 @@ const ListCustomer = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Thông tin cơ bản */}
+              {/* Personal information */}
               <div>
-                <h5 className="text-xs font-semibold text-gray-500 uppercase mb-2">Thông tin cá nhân</h5>
+                <h5 className="text-xs font-semibold text-gray-500 uppercase mb-2">Personal Information</h5>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-700">Họ và tên:</span>
-                    <span className="text-sm text-gray-900">{customer.name || 'Chưa cập nhật'}</span>
+                    <span className="text-sm font-medium text-gray-700">Full Name:</span>
+                    <span className="text-sm text-gray-900">{customer.name || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-700">Tuổi:</span>
-                    <span className="text-sm text-gray-900">{customer.age || 'Chưa cập nhật'}</span>
+                    <span className="text-sm font-medium text-gray-700">Age:</span>
+                    <span className="text-sm text-gray-900">{customer.age || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-700">Giới tính:</span>
-                    <span className="text-sm text-gray-900">{customer.gender || 'Chưa cập nhật'}</span>
+                    <span className="text-sm font-medium text-gray-700">Gender:</span>
+                    <span className="text-sm text-gray-900">{customer.gender || 'N/A'}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Liên hệ */}
+              {/* Contact */}
               <div>
-                <h5 className="text-xs font-semibold text-gray-500 uppercase mb-2">Liên hệ</h5>
+                <h5 className="text-xs font-semibold text-gray-500 uppercase mb-2">Contact</h5>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-700">Email:</span>
                     <span className="text-sm text-gray-900">{customer.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-700">SĐT:</span>
-                    <span className="text-sm text-gray-900">{customer.phone || 'Chưa cập nhật'}</span>
+                    <span className="text-sm font-medium text-gray-700">Phone:</span>
+                    <span className="text-sm text-gray-900">{customer.phone || 'N/A'}</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="text-sm font-medium text-gray-700">Địa chỉ:</span>
-                    <span className="text-sm text-gray-900">{customer.address || 'Chưa cập nhật'}</span>
+                    <span className="text-sm font-medium text-gray-700">Address:</span>
+                    <span className="text-sm text-gray-900">{customer.address || 'N/A'}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Tài khoản */}
+              {/* Account */}
               <div>
-                <h5 className="text-xs font-semibold text-gray-500 uppercase mb-2">Tài khoản</h5>
+                <h5 className="text-xs font-semibold text-gray-500 uppercase mb-2">Account</h5>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-700">Username:</span>
@@ -648,7 +675,7 @@ const ListCustomer = () => {
                       <button
                         onClick={() => togglePasswordVisibility(customer._id)}
                         className="p-1 hover:bg-gray-100 rounded transition-colors"
-                        title={showPasswords[customer._id] ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                        title={showPasswords[customer._id] ? "Hide password" : "Show password"}
                       >
                         {showPasswords[customer._id] ? (
                           <FiEyeOff className="text-gray-600" size={16} />
@@ -659,9 +686,9 @@ const ListCustomer = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-700">Ngày tạo:</span>
+                    <span className="text-sm font-medium text-gray-700">Created:</span>
                     <span className="text-sm text-gray-900">
-                      {new Date(customer.createdAt).toLocaleDateString('vi-VN')}
+                      {new Date(customer.createdAt).toLocaleDateString('en-US')}
                     </span>
                   </div>
                 </div>

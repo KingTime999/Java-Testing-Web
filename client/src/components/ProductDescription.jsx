@@ -30,10 +30,11 @@ const ProductDescription = ({ product }) => {
         }
       );
       if (response.data.success) {
-        setReviews(response.data.reviews);
+        setReviews(response.data.data?.reviews || []);
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
+      setReviews([]);
     } finally {
       setIsLoadingReviews(false);
     }
@@ -45,10 +46,11 @@ const ProductDescription = ({ product }) => {
         `${import.meta.env.VITE_BACKEND_URL}/api/review/product/${product._id}/stats`
       );
       if (response.data.success) {
-        setReviewStats(response.data);
+        setReviewStats(response.data.data || null);
       }
     } catch (error) {
       console.error("Error fetching review stats:", error);
+      setReviewStats(null);
     }
   };
 
@@ -109,7 +111,7 @@ const ProductDescription = ({ product }) => {
                 <h6 className="font-semibold text-gray-900 mb-3">Description</h6>
                 <div className="text-sm text-gray-700 leading-relaxed space-y-3">
                   {product.detailedDescription.split('\n\n').map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
+                    <p key={`desc-${index}`}>{paragraph}</p>
                   ))}
                 </div>
               </div>
@@ -148,7 +150,7 @@ const ProductDescription = ({ product }) => {
                       <span className="font-semibold text-gray-900 block mb-2">Key Features:</span>
                       <ul className="list-disc pl-5 text-gray-700 flex flex-col gap-1">
                         {product.details.features.map((feature, index) => (
-                          <li key={index}>{feature}</li>
+                          <li key={`feature-${index}`}>{feature}</li>
                         ))}
                       </ul>
                     </div>
@@ -193,16 +195,16 @@ const ProductDescription = ({ product }) => {
                   <div className="text-center md:text-left">
                     <div className="flex items-baseline gap-2 justify-center md:justify-start">
                       <span className="text-5xl font-bold text-gray-900">
-                        {reviewStats.averageRating.toFixed(1)}
+                        {reviewStats.averageRating?.toFixed(1) || '0.0'}
                       </span>
                       <span className="text-gray-500">/5</span>
                     </div>
                     <div className="flex gap-1 mt-2 justify-center md:justify-start">
                       {[...Array(5)].map((_, i) => (
                         <FiStar
-                          key={i}
+                          key={`star-${i}`}
                           className={`w-5 h-5 ${
-                            i < Math.round(reviewStats.averageRating)
+                            i < Math.round(reviewStats.averageRating || 0)
                               ? 'fill-yellow-400 text-yellow-400'
                               : 'text-gray-300'
                           }`}
@@ -217,12 +219,12 @@ const ProductDescription = ({ product }) => {
                   {/* Rating Distribution */}
                   <div className="flex-1 max-w-md">
                     {[5, 4, 3, 2, 1].map((star) => {
-                      const count = reviewStats.ratingDistribution[star] || 0;
+                      const count = reviewStats.ratingDistribution?.[star] || 0;
                       const percentage = reviewStats.totalReviews > 0 
                         ? (count / reviewStats.totalReviews) * 100 
                         : 0;
                       return (
-                        <div key={star} className="flex items-center gap-3 mb-2">
+                        <div key={`rating-${star}`} className="flex items-center gap-3 mb-2">
                           <span className="text-sm text-gray-600 w-8">{star} ⭐</span>
                           <div className="flex-1 bg-gray-200 rounded-full h-2">
                             <div
@@ -268,11 +270,11 @@ const ProductDescription = ({ product }) => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
                 <p className="text-gray-500 mt-4">Loading reviews...</p>
               </div>
-            ) : reviews.length > 0 ? (
+            ) : reviews && reviews.length > 0 ? (
               <div className="space-y-6">
-                {reviews.map((review) => (
+                {reviews.map((review, idx) => (
                   <div
-                    key={review._id}
+                    key={review._id || `review-${idx}`}
                     className="border-b border-gray-200 pb-6 last:border-b-0"
                   >
                     {/* Review Header */}
@@ -300,7 +302,7 @@ const ProductDescription = ({ product }) => {
                               <div className="flex gap-0.5">
                                 {[...Array(5)].map((_, i) => (
                                   <FiStar
-                                    key={i}
+                                    key={`review-star-${review._id}-${i}`}
                                     className={`w-4 h-4 ${
                                       i < review.rating
                                         ? 'fill-yellow-400 text-yellow-400'

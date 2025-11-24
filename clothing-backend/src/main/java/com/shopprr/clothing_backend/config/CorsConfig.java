@@ -23,7 +23,8 @@ public class CorsConfig {
         ));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setExposedHeaders(Arrays.asList("Authorization"));
+        config.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie"));
+        config.setMaxAge(3600L); // Cache preflight requests for 1 hour
         
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

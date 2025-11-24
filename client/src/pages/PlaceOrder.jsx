@@ -77,18 +77,13 @@ const PlaceOrder = () => {
         } else {
             toast.error(data.message);
         }
-    } else {
-        // Place order using Stripe
-        const { data } = await axios.post("/api/order/stripe", {
-            items,
-            address: formData,
+    } else if (method === "stripe") {
+        // Stripe payment - Coming soon
+        toast.error("Stripe payment is coming soon! Please use Cash on Delivery for now.", {
+            duration: 4000,
+            icon: "🚧",
         });
-        if (data.success) {
-           window.location.replace(data.url)
-        } else {
-            toast.error(data.message);
-        }
-        
+        return;
     }
 } catch (error) {
     console.log(error)

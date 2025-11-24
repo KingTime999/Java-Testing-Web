@@ -47,7 +47,19 @@ const List = () => {
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === "All" || product.category === selectedCategory
+    
+    // Flexible category matching to handle variations in naming
+    let matchesCategory = selectedCategory === "All"
+    if (!matchesCategory && product.category) {
+      const productCategory = product.category.toLowerCase().trim()
+      const filterCategory = selectedCategory.toLowerCase().trim()
+      
+      // Exact match or partial match for similar categories
+      matchesCategory = productCategory === filterCategory ||
+                       productCategory.includes(filterCategory) ||
+                       filterCategory.includes(productCategory)
+    }
+    
     return matchesSearch && matchesCategory
   })
 
@@ -84,22 +96,22 @@ const List = () => {
     }
   }
 
-  // Hàm apply discount cho các sản phẩm đã chọn
+  // Apply discount function for selected products
   const applyDiscount = async () => {
     if (selectedProducts.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một sản phẩm")
+      toast.error("Please select at least one product")
       return
     }
     if (!discountPercent || discountPercent <= 0 || discountPercent > 100) {
-      toast.error("Vui lòng nhập % giảm giá hợp lệ (1-100)")
+      toast.error("Please enter a valid discount percentage (1-100)")
       return
     }
     if (!startDate || !endDate) {
-      toast.error("Vui lòng chọn ngày bắt đầu và kết thúc")
+      toast.error("Please select start date and end date")
       return
     }
     if (new Date(startDate) > new Date(endDate)) {
-      toast.error("Ngày bắt đầu phải trước ngày kết thúc")
+      toast.error("Start date must be before end date")
       return
     }
 
@@ -117,24 +129,24 @@ const List = () => {
         setDiscountPercent("")
         setStartDate("")
         setEndDate("")
-        toast.success(data.message || "Áp dụng giảm giá thành công!")
+        toast.success(data.message || "Discount applied successfully!")
       } else {
-        toast.error(data.message || "Lỗi khi áp dụng giảm giá")
+        toast.error(data.message || "Error applying discount")
       }
     } catch (error) {
       console.error("Apply discount error:", error)
-      toast.error(error.message || "Lỗi khi áp dụng giảm giá")
+      toast.error(error.message || "Error applying discount")
     }
   }
 
-  // Hàm remove discount cho các sản phẩm đã chọn
+  // Remove discount function for selected products
   const removeDiscount = async () => {
     if (selectedProducts.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một sản phẩm")
+      toast.error("Please select at least one product")
       return
     }
 
-    if (!window.confirm(`Bạn có chắc chắn muốn hủy giảm giá cho ${selectedProducts.length} sản phẩm?`)) {
+    if (!window.confirm(`Are you sure you want to remove discount from ${selectedProducts.length} product(s)?`)) {
       return
     }
 
@@ -146,13 +158,13 @@ const List = () => {
       if(data.success){
         fetchProducts()
         setSelectedProducts([])
-        toast.success(data.message || "Hủy giảm giá thành công!")
+        toast.success(data.message || "Discount removed successfully!")
       } else {
-        toast.error(data.message || "Lỗi khi hủy giảm giá")
+        toast.error(data.message || "Error removing discount")
       }
     } catch (error) {
       console.error("Remove discount error:", error)
-      toast.error(error.message || "Lỗi khi hủy giảm giá")
+      toast.error(error.message || "Error removing discount")
     }
   }
 
@@ -184,13 +196,13 @@ const List = () => {
       const {data} = await axios.post('/api/product/delete', {productId})
       if(data.success){
         fetchProducts() // reload danh sách sau khi xóa
-        toast.success(data.message || "Xóa sản phẩm thành công!")
+        toast.success(data.message || "Product deleted successfully!")
       } else {
-        toast.error(data.message || "Lỗi khi xóa sản phẩm")
+        toast.error(data.message || "Error deleting product")
       }
     } catch (error) {
-      console.error("Delete error:", error)
-      toast.error(error.message || "Lỗi khi xóa sản phẩm")
+      console.error("Delete product error:", error)
+      toast.error(error.message || "Error deleting product")
     }
   }
 
@@ -217,15 +229,15 @@ const List = () => {
     
     // Validation
     if (!editForm.name.trim()) {
-      toast.error("Vui lòng nhập tên sản phẩm")
+      toast.error("Please enter product name")
       return
     }
     if (!editForm.description.trim()) {
-      toast.error("Vui lòng nhập mô tả sản phẩm")
+      toast.error("Please enter product description")
       return
     }
-    if (editForm.sizes.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một size")
+    if (!editForm.sizes || editForm.sizes.length === 0) {
+      toast.error("Please select at least one size")
       return
     }
 
@@ -239,13 +251,13 @@ const List = () => {
         fetchProducts() // reload danh sách
         setShowEditModal(false)
         setEditingProduct(null)
-        toast.success(data.message || "Cập nhật sản phẩm thành công!")
+        toast.success(data.message || "Product updated successfully!")
       } else {
-        toast.error(data.message || "Lỗi khi cập nhật sản phẩm")
+        toast.error(data.message || "Error updating product")
       }
     } catch (error) {
-      console.error("Update error:", error)
-      toast.error(error.message || "Lỗi khi cập nhật sản phẩm")
+      console.error("Update product error:", error)
+      toast.error(error.message || "Error updating product")
     }
   }
 
@@ -268,7 +280,7 @@ const List = () => {
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Tìm kiếm sản phẩm theo tên hoặc mô tả..."
+            placeholder="Search products by name or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
@@ -316,15 +328,15 @@ const List = () => {
 
       {/* Results Count */}
       <div className="mb-2 text-sm text-gray-600">
-        Hiển thị <span className="font-semibold">{filteredProducts.length}</span> sản phẩm
-        {searchQuery && ` cho "${searchQuery}"`}
-        {selectedCategory !== "All" && ` trong danh mục "${selectedCategory}"`}
+        Showing <span className="font-semibold">{filteredProducts.length}</span> product(s)
+        {searchQuery && ` for "${searchQuery}"`}
+        {selectedCategory !== "All" && ` in category "${selectedCategory}"`}
       </div>
 
       {/* Discount Control Bar */}
       <div className="mb-4 flex flex-wrap items-center gap-3 bg-white p-4 rounded-lg border border-gray-200">
         <div className="flex items-center gap-2">
-          <label className="font-semibold text-gray-700">% Giảm giá:</label>
+          <label className="font-semibold text-gray-700">Discount %:</label>
           <input
             type="number"
             min="0"
@@ -340,11 +352,11 @@ const List = () => {
           onClick={selectAllProducts}
           className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
         >
-          {selectedProducts.length === filteredProducts.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+          {selectedProducts.length === filteredProducts.length ? "Deselect All" : "Select All"}
         </button>
 
         <div className="flex items-center gap-2">
-          <label className="font-semibold text-gray-700">Ngày bắt đầu:</label>
+          <label className="font-semibold text-gray-700">Start Date:</label>
           <input
             type="date"
             value={startDate}
@@ -354,12 +366,12 @@ const List = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="font-semibold text-gray-700">Ngày kết thúc:</label>
+          <label className="font-semibold text-gray-700">End Date:</label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            min={startDate} // Không cho chọn ngày kết thúc trước ngày bắt đầu
+            min={startDate} // Cannot select end date before start date
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
           />
         </div>
@@ -369,7 +381,7 @@ const List = () => {
           className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors"
         >
           <FiCheck size={18} />
-          <span>Áp dụng</span>
+          <span>Apply</span>
         </button>
 
         <button
@@ -377,12 +389,12 @@ const List = () => {
           className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
         >
           <FiX size={18} />
-          <span>Hủy giảm giá</span>
+          <span>Remove Discount</span>
         </button>
         
         {selectedProducts.length > 0 && (
           <span className="text-sm text-gray-600">
-            Đã chọn: <span className="font-semibold">{selectedProducts.length}</span> sản phẩm
+            Selected: <span className="font-semibold">{selectedProducts.length}</span> product(s)
           </span>
         )}
       </div>

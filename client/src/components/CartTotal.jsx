@@ -49,9 +49,10 @@ const CartTotal = ({method, setMethod}) => { // Nhận method và setMethod từ
                 onClick={() => setMethod("stripe")} // Như trên, stripe ở đây là phương thức thanh toán trực tuyến
                 className={`${
                   method === "stripe" ? "btn-secondary" : "btn-light"
-                } !py-1 text-xs cursor-pointer`}
+                } !py-1 text-xs cursor-pointer relative`}
               >
                 Stripe
+                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[8px] px-1 rounded-sm">Coming Soon</span>
               </div>
             </div>
           </div>
@@ -72,9 +73,9 @@ const CartTotal = ({method, setMethod}) => { // Nhận method và setMethod từ
         <div className="flex justify-between">
           <h5 className="h5">Shipping Fee</h5>
           <p className="font-bold">
-            {getCartAmount() === 0 // Nếu giỏ hàng trống, phí vận chuyển là $0.00
-              ? "$0.00"
-              : `${currency}${delivery_charges}.00`} {/* Ngược lại sử dụng phí vận chuyển cố định */}
+            {getCartAmount() === 0 
+              ? `${currency}0.00`
+              : `${currency}${delivery_charges.toFixed(2)}`}
           </p>
         </div>
         <div className="flex justify-between">

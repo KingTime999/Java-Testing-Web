@@ -43,6 +43,14 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public void deleteUser(String id) {
+        userRepository.deleteById(id);
+    }
+
+    public String hashPassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
+    }
+
     public boolean verifyPassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }

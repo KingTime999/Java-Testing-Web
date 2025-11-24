@@ -22,6 +22,7 @@ import Orders from './pages/admin/Orders'
 import ListCustomer from './pages/admin/ListCustomer'
 import Report from './pages/admin/Report'
 import Loading from './components/Loading'
+import AboutUs from './pages/AboutUs'
 
 const App = () => {
   const {showUserLogin, isAdmin} = useContext(ShopContext)
@@ -38,6 +39,7 @@ const App = () => {
         <Route path='/collection' element={<Collection />}/>
         <Route path='/collection/:category' element={<CategoryCollection />}/>
         <Route path='/collection/:category/:id' element={<ProductDetails/>}/>
+        <Route path='/about' element={<AboutUs />}/>
         <Route path='/testimonial' element={<Testimonial/>}/>
         <Route path='/contact' element={<Contact/>}/>
         <Route path='/place-order' element={<PlaceOrder />}/>

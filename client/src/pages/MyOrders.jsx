@@ -9,10 +9,22 @@ const MyOrders = () => {
   const loadOrderData = async () => {
     if (!user) return;
     try {
+      console.log("🔍 Fetching orders for user:", user);
       const { data } = await axios.post("/api/order/userorders");
-      if (data.success) setOrders(data.orders);
+      console.log("📦 Orders response:", data);
+      if (data.success && data.data && data.data.orders) {
+        console.log("✅ Setting orders:", data.data.orders);
+        setOrders(data.data.orders);
+      } else {
+        console.error("❌ Failed to load orders:", data.message);
+        setOrders([]);
+      }
     } catch (error) {
-      console.log(error);
+      console.error("❌ Error loading orders:", error.response?.data || error.message);
+      if (error.response?.status === 401) {
+        console.warn("⚠️ Unauthorized - Cookie may not be set. Please login again!");
+      }
+      setOrders([]);
     }
   };
 
@@ -24,15 +36,26 @@ const MyOrders = () => {
     <div className="max-padd-container py-16 pt-28 bg-primary">
       <Title title1="My Orders" title2="List" titleStyles="pb-10" />
 
-      {orders.map((order) => (
-        <div key={order._id} className="bg-white p-2 mt-3 rounded-sm">
+      {/* No orders message */}
+      {!orders || orders.length === 0 ? (
+        <div className="bg-white p-8 text-center rounded-lg">
+          <p className="text-gray-500 text-lg">No orders yet</p>
+          <p className="text-gray-400 mt-2">Your orders will appear here after you place them</p>
+        </div>
+      ) : (
+        orders.map((order) => (
+          <div key={order._id} className="bg-white p-2 mt-3 rounded-sm">
 
           {/* Products List */}
           {order.items.map((item, idx) => (
             <div key={idx} className="text-gray-700 flex flex-col lg:flex-row gap-4 mb-3">
               <div className="flex flex-[2] gap-x-3">
                 <div className="flexCenter bg-primary">
-                  <img src={item.product.image[0]} alt="" className="max-h-20 max-w-20 object-contain" />
+                  <img 
+                    src={item.product.image[0]} 
+                    alt={item.product.name} 
+                    className="max-h-20 max-w-20 object-contain" 
+                  />
                 </div>
 
                 <div className="block w-full">
@@ -40,7 +63,7 @@ const MyOrders = () => {
                   <div className="flex flex-wrap gap-3 max-sm:gap-y-1 mt-1">
                     <div className="flex items-center gap-x-2">
                       <h5 className="medium-14">Price:</h5>
-                      <p>{currency}{item.product.offerPrice}</p>
+                      <p>{currency}{item.price}</p>
                     </div>
                     <div className="flex items-center gap-x-2">
                       <h5 className="medium-14">Quantity:</h5>
@@ -109,7 +132,8 @@ const MyOrders = () => {
           </div>
 
         </div>
-      ))}
+      ))
+      )}
     </div>
   );
 };

@@ -1,16 +1,20 @@
 package com.shopprr.clothing_backend.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.shopprr.clothing_backend.dto.OrderResponse;
 import com.shopprr.clothing_backend.model.Order;
 import com.shopprr.clothing_backend.model.Product;
 import com.shopprr.clothing_backend.model.User;
 import com.shopprr.clothing_backend.repository.OrderRepository;
 import com.shopprr.clothing_backend.repository.ProductRepository;
 import com.shopprr.clothing_backend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +51,23 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public List<Order> getUserOrders(String userId) {
-        return orderRepository.findByUserId(userId);
+    public List<OrderResponse> getUserOrders(String userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        
+        // Get all product IDs from all orders
+        List<String> productIds = orders.stream()
+            .flatMap(order -> order.getItems().stream())
+            .map(Order.OrderItem::getProduct)
+            .distinct()
+            .collect(Collectors.toList());
+        
+        // Fetch all products at once
+        List<Product> products = productRepository.findAllById(productIds);
+        
+        // Convert to OrderResponse with product info
+        return orders.stream()
+            .map(order -> OrderResponse.fromOrder(order, products))
+            .collect(Collectors.toList());
     }
 
     public Order getOrderById(String orderId) {
@@ -60,7 +79,29 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public List<OrderResponse> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        
+        // Get all product IDs from all orders
+        List<String> productIds = orders.stream()
+            .flatMap(order -> order.getItems().stream())
+            .map(Order.OrderItem::getProduct)
+            .distinct()
+            .collect(Collectors.toList());
+        
+        // Fetch all products at once
+        List<Product> products = productRepository.findAllById(productIds);
+        
+        // Convert to OrderResponse with product info
+        return orders.stream()
+            .map(order -> OrderResponse.fromOrder(order, products))
+            .collect(Collectors.toList());
+    }
+
+    public void deleteOrder(String orderId) {
+        if (!orderRepository.existsById(orderId)) {
+            throw new RuntimeException("Order not found");
+        }
+        orderRepository.deleteById(orderId);
     }
 }

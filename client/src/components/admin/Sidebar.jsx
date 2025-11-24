@@ -72,7 +72,7 @@ const Sidebar = () => {
               to="/admin"
               className="bold-20 md:bold-24 uppercase font-paci lg:pl-[15%]"
             >
-              Shopprr <span className="text-secondary bold-28">.</span>
+              Veloura <span className="text-secondary bold-28">.</span>
             </Link>
 
             <div className="flex sm:flex-col sm:gap-x-5 gap-y-8 sm:pt-10">

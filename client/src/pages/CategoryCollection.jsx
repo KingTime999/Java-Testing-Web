@@ -21,16 +21,23 @@ const CategoryCollection = () => {
     const fetchCategoryName = async () => {
       if (category) {
         try {
+          console.log('🔍 Fetching category for slug:', category);
           const { data } = await axios.get(`/api/category/slug/${category}`);
-          if (data.success && data.category) {
-            setCategoryName(data.category.name);
+          console.log('📦 API Response:', data);
+          
+          // Backend trả về: {success: true, message: "...", data: {category object}}
+          if (data.success && data.data) {
+            console.log('✅ Setting categoryName to:', data.data.name);
+            setCategoryName(data.data.name);
           }
         } catch (error) {
           console.error("Error fetching category:", error);
           // Fallback: use slug as display name
-          setCategoryName(category.split('-').map(word => 
+          const fallbackName = category.split('-').map(word => 
             word.charAt(0).toUpperCase() + word.slice(1)
-          ).join(' '));
+          ).join(' ');
+          console.log('⚠️ Using fallback categoryName:', fallbackName);
+          setCategoryName(fallbackName);
         }
       }
     };
@@ -40,22 +47,38 @@ const CategoryCollection = () => {
   // Logic lọc sản phẩm
   // Chịu trách nhiệm cập nhật danh sách sản phẩm hiển thị mỗi khi dữ liệu hoặc điều kiện lọc thay đổi
   useEffect(() => {
+    console.log('🔄 Filtering products...');
+    console.log('  - Total products:', products.length);
+    console.log('  - Category name for filter:', categoryName);
+    console.log('  - Search query:', searchQuery);
+    
     let result = products;
 
     // Filter by category name (đã convert từ slug)
     if (categoryName) {
+      console.log('  - Filtering by category:', categoryName);
       result = result.filter(
-        (product) => product.category === categoryName
+        (product) => {
+          const matches = product.category === categoryName;
+          if (!matches) {
+            console.log(`    ❌ Product "${product.name}" (${product.category}) does not match "${categoryName}"`);
+          }
+          return matches;
+        }
       );
+      console.log('  - Products after category filter:', result.length);
     }
 
     // Lọc theo từ khóa tìm kiếm (searchQuery) từ Context
     if (searchQuery.length > 0) {
+      console.log('  - Filtering by search query:', searchQuery);
       result = result.filter((product) =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
+      console.log('  - Products after search filter:', result.length);
     }
     
+    console.log('✅ Final filtered products:', result.length);
     setFilteredProducts(result);
     setCurrentPage(1); // 🔁 Reset to first page on search/filter change
   }, [products, searchQuery, categoryName]);

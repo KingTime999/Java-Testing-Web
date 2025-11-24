@@ -1,15 +1,19 @@
-import React, { useContext, useEffect, useState } from "react" // import hooks cần thiết
-import { toast } from "react-hot-toast" // import toast để hiển thị thông báo
-import { ShopContext } from "../../context/ShopContext" // import ShopContext để sử dụng axios và currency
+import React, { useContext, useEffect, useState } from "react" // import necessary hooks
+import { toast } from "react-hot-toast" // import toast for notifications
+import { ShopContext } from "../../context/ShopContext" // import ShopContext to use axios and currency
 import { FiEdit2, FiTrash2, FiPlus, FiX, FiSearch } from "react-icons/fi" // import icons
 
-// Component hiển thị danh sách đơn hàng (Admin)
+// Component to display order list (Admin)
 const Orders = () => {
-  const { currency, axios, products } = useContext(ShopContext) // lấy currency, axios và products từ context
-  const [orders, setOrders] = useState([]) // state chứa mảng đơn hàng
-  const [loading, setLoading] = useState(true) // state để hiển thị trạng thái đang tải
-  const [error, setError] = useState(null) // state lưu lỗi nếu có
-  const [customers, setCustomers] = useState([]) // state chứa danh sách khách hàng
+  const { currency, axios, products } = useContext(ShopContext) // get currency, axios and products from context
+  const [orders, setOrders] = useState([]) // state containing array of orders
+  const [loading, setLoading] = useState(true) // state to display loading status
+  const [error, setError] = useState(null) // state to save error if any
+  const [customers, setCustomers] = useState([]) // state containing list of customers
+  
+  // States for search and filter
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterStatus, setFilterStatus] = useState("All")
   
   // States cho Create Order Modal
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -51,35 +55,35 @@ const Orders = () => {
     status: ""
   })
 
-  // Hàm fetchAllOrders: lấy danh sách đơn hàng từ server
+  // fetchAllOrders function: get list of orders from server
   const fetchAllOrders = async () => {
     try {
-      setLoading(true) // bắt đầu loading
+      setLoading(true) // start loading
       setError(null) // reset error
       console.log("🔄 Fetching orders...")
-      const { data } = await axios.post("/api/order/list") // gọi API /api/order/list
+      const { data } = await axios.post("/api/order/list") // call API /api/order/list
       console.log("📦 Response:", data)
       if (data.success) {
-        setOrders(data.data.orders) // lưu orders vào state từ data.data.orders
-        console.log("✅ Loaded orders:", data.data.orders.length) // log số lượng orders
+        setOrders(data.data.orders) // save orders to state from data.data.orders
+        console.log("✅ Loaded orders:", data.data.orders.length) // log number of orders
       } else {
         const errorMsg = data.message || "Unknown error"
         setError(errorMsg)
-        toast.error(errorMsg) // hiển thị lỗi nếu server trả về success: false
+        toast.error(errorMsg) // display error if server returns success: false
         console.error("❌ API error:", errorMsg)
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || error.message || "Network error"
       setError(errorMsg)
       console.log("❌ Fetch error:", error)
-      toast.error(errorMsg) // hiển thị lỗi nếu request lỗi
+      toast.error(errorMsg) // display error if request fails
     } finally {
-      setLoading(false) // kết thúc loading
+      setLoading(false) // end loading
       console.log("✔️ Fetch completed")
     }
   }
 
-  // Hàm fetchCustomers: lấy danh sách khách hàng
+  // fetchCustomers function: get list of customers
   const fetchCustomers = async () => {
     try {
       const { data } = await axios.get("/api/user/list-all")
@@ -91,34 +95,34 @@ const Orders = () => {
     }
   }
 
-  // Hàm statusHandler: thay đổi trạng thái đơn hàng (packing, shipped, delivered...)
+  // statusHandler function: change order status (packing, shipped, delivered...)
   const statusHandler = async (e, orderId) => {
     try {
       const { data } = await axios.post("/api/order/status", {
         orderId,
-        status: e.target.value, // lấy value từ select
+        status: e.target.value, // get value from select
       })
       if (data.success) {
-        await fetchAllOrders() // reload danh sách đơn hàng sau khi cập nhật
-        toast.success(data.message) // thông báo thành công
+        await fetchAllOrders() // reload order list after update
+        toast.success(data.message) // show success notification
       }
     } catch (error) {
       console.log(error)
-      toast.error(error.message) // thông báo lỗi
+      toast.error(error.message) // show error notification
     }
   }
 
-  // Hàm deleteOrder: xóa đơn hàng
+  // deleteOrder function: delete an order
   const deleteOrder = async (orderId) => {
-    // Xác nhận trước khi xóa
-    if (!window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này?")) {
+    // Confirm before deleting
+    if (!window.confirm("Are you sure you want to delete this order?")) {
       return
     }
     
     try {
       const {data} = await axios.post('/api/order/delete', {orderId})
       if(data.success){
-        await fetchAllOrders() // reload danh sách sau khi xóa
+        await fetchAllOrders() // reload list after deletion
         toast.success(data.message)
       } else {
         toast.error(data.message)
@@ -128,7 +132,7 @@ const Orders = () => {
     }
   }
 
-  // Hàm editOrder: mở modal chỉnh sửa đơn hàng
+  // editOrder function: open edit order modal
   const editOrder = (orderId) => {
     const order = orders.find(o => o._id === orderId)
     if (order) {
@@ -141,7 +145,7 @@ const Orders = () => {
     }
   }
 
-  // Hàm handleUpdateOrder: cập nhật đơn hàng
+  // handleUpdateOrder function: update order
   const handleUpdateOrder = async (e) => {
     e.preventDefault()
     
@@ -156,35 +160,35 @@ const Orders = () => {
         await fetchAllOrders()
         setShowEditModal(false)
         setEditingOrder(null)
-        toast.success(data.message || "Cập nhật đơn hàng thành công!")
+        toast.success(data.message || "Order updated successfully!")
       } else {
-        toast.error(data.message || "Lỗi khi cập nhật đơn hàng")
+        toast.error(data.message || "Error updating order")
       }
     } catch (error) {
       console.error("Update order error:", error)
-      toast.error(error.message || "Lỗi khi cập nhật đơn hàng")
+      toast.error(error.message || "Error updating order")
     }
   }
 
-  // Hàm handleCreateOrder: tạo đơn hàng mới
+  // handleCreateOrder function: create new order
   const handleCreateOrder = async (e) => {
     e.preventDefault()
     
     // Validation
     if (createForm.items.length === 0) {
-      toast.error("Vui lòng thêm ít nhất một sản phẩm")
+      toast.error("Please add at least one product")
       return
     }
     if (!createForm.address.firstName || !createForm.address.lastName) {
-      toast.error("Vui lòng nhập tên khách hàng")
+      toast.error("Please enter customer name")
       return
     }
     if (!createForm.address.phone) {
-      toast.error("Vui lòng nhập số điện thoại")
+      toast.error("Please enter phone number")
       return
     }
     if (!createForm.address.street || !createForm.address.city) {
-      toast.error("Vui lòng nhập địa chỉ đầy đủ")
+      toast.error("Please enter full address")
       return
     }
 
@@ -215,24 +219,24 @@ const Orders = () => {
           },
           paymentMethod: "COD"
         })
-        toast.success(data.message || "Tạo đơn hàng thành công!")
+        toast.success(data.message || "Order created successfully!")
       } else {
-        toast.error(data.message || "Lỗi khi tạo đơn hàng")
+        toast.error(data.message || "Error creating order")
       }
     } catch (error) {
       console.error("Create order error:", error)
-      toast.error(error.message || "Lỗi khi tạo đơn hàng")
+      toast.error(error.message || "Error creating order")
     }
   }
 
-  // Hàm addProductToOrder: thêm sản phẩm vào đơn hàng
+  // addProductToOrder function: add product to order
   const addProductToOrder = () => {
-    if (!selectedProduct) {
-      toast.error("Vui lòng chọn sản phẩm")
+    if (!product) {
+      toast.error("Please select a product")
       return
     }
     if (!selectedSize) {
-      toast.error("Vui lòng chọn size")
+      toast.error("Please select a size")
       return
     }
     
@@ -253,11 +257,11 @@ const Orders = () => {
       setSelectedProduct("")
       setSelectedSize("")
       setSelectedQuantity(1)
-      toast.success("Đã thêm sản phẩm vào đơn hàng")
+      toast.success("Product added to order")
     }
   }
 
-  // Hàm removeProductFromOrder: xóa sản phẩm khỏi đơn hàng
+  // removeProductFromOrder function: remove product from order
   const removeProductFromOrder = (index) => {
     setCreateForm(prev => ({
       ...prev,
@@ -265,7 +269,7 @@ const Orders = () => {
     }))
   }
 
-  // Hàm handleCustomerSelect: chọn khách hàng
+  // handleCustomerSelect function: select customer
   const handleCustomerSelect = (customerId) => {
     const customer = customers.find(c => c._id === customerId)
     if (customer) {
@@ -288,9 +292,35 @@ const Orders = () => {
   }
 
   useEffect(() => {
-    fetchAllOrders() // gọi khi component mount để load đơn hàng
-    fetchCustomers() // lấy danh sách khách hàng
+    fetchAllOrders() // call when component mounts to load orders
+    fetchCustomers() // get list of customers
   }, [])
+
+  // Filter orders based on search and status
+  const filteredOrders = orders.filter(order => {
+    // Filter by search term (order ID, customer name, phone)
+    const searchLower = searchTerm.toLowerCase()
+    const matchesSearch = !searchTerm || 
+      order._id?.toLowerCase().includes(searchLower) ||
+      order.address?.firstName?.toLowerCase().includes(searchLower) ||
+      order.address?.lastName?.toLowerCase().includes(searchLower) ||
+      order.address?.phone?.toLowerCase().includes(searchLower) ||
+      order.address?.email?.toLowerCase().includes(searchLower)
+    
+    // Flexible status matching to handle variations
+    let matchesStatus = filterStatus === "All"
+    if (!matchesStatus && order.status) {
+      const orderStatus = order.status.toLowerCase().trim()
+      const filterStat = filterStatus.toLowerCase().trim()
+      
+      // Exact match or partial match for similar statuses
+      matchesStatus = orderStatus === filterStat ||
+                     orderStatus.includes(filterStat) ||
+                     filterStat.includes(orderStatus)
+    }
+    
+    return matchesSearch && matchesStatus
+  })
 
   // Hiển thị loading spinner khi đang tải
   if (loading) {
@@ -298,46 +328,32 @@ const Orders = () => {
       <div className="px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl">
         {/* Header với nút Create Order */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Quản Lý Đơn Hàng</h2>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/90 text-white font-medium rounded-lg transition-colors"
-          >
-            <FiPlus size={18} />
-            <span>Tạo Đơn Hàng</span>
-          </button>
+          <h2 className="text-2xl font-bold text-gray-800">Order Management</h2>
         </div>
 
         <div className="flex items-center justify-center h-[80vh]">
           <div className="text-center">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-            <p className="mt-3 text-gray-600">Đang tải đơn hàng...</p>
+            <p className="mt-3 text-gray-600">Loading orders...</p>
           </div>
         </div>
       </div>
     )
   }
 
-  // Hiển thị thông báo khi chưa có đơn hàng
+  // Display message when there are no orders
   if (!loading && orders.length === 0) {
     return (
       <div className="px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl">
-        {/* Header với nút Create Order */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Quản Lý Đơn Hàng</h2>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/90 text-white font-medium rounded-lg transition-colors"
-          >
-            <FiPlus size={18} />
-            <span>Tạo Đơn Hàng</span>
-          </button>
+          <h2 className="text-2xl font-bold text-gray-800">Order Management</h2>
         </div>
 
         <div className="flex items-center justify-center h-[80vh]">
           <div className="text-center bg-white p-8 rounded-xl shadow-sm">
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">Chưa có đơn hàng nào</h3>
-            <p className="text-gray-500">Các đơn hàng sẽ hiển thị ở đây khi khách hàng đặt mua.</p>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No orders yet</h3>
+            <p className="text-gray-500">Orders will appear here when customers place them.</p>
           </div>
         </div>
       </div>
@@ -346,27 +362,72 @@ const Orders = () => {
 
   return (
     <div className="px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl">
-      {/* Header với nút Create Order */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Quản Lý Đơn Hàng</h2>
-        <button
-          onClick={() => {
-            console.log("Clicked Create Order button")
-            console.log("showCreateModal before:", showCreateModal)
-            setShowCreateModal(true)
-            console.log("showCreateModal after:", true)
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/90 text-white font-medium rounded-lg transition-colors"
-        >
-          <FiPlus size={18} />
-          <span>Tạo Đơn Hàng</span>
-        </button>
+        <h2 className="text-2xl font-bold text-gray-800">Order Management</h2>
       </div>
 
-      {/* Lặp qua từng đơn hàng và hiển thị */}
-      {orders.map((order) => (
+      {/* Search and Filter Bar */}
+      <div className="mb-6 space-y-4">
+        {/* Search Box */}
+        <div className="relative">
+          <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by Order ID, customer name, phone or email..."
+            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+          />
+        </div>
+
+        {/* Filter Status and Count */}
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-gray-600">
+            Showing <span className="font-semibold">{filteredOrders.length}</span> order(s)
+          </p>
+          
+          {/* Status Filter Dropdown */}
+          <div className="relative">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-secondary focus:border-transparent cursor-pointer"
+            >
+              <option value="All">All Status</option>
+              <option value="Order Placed">Order Placed</option>
+              <option value="Packing">Packing</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Done">Done</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Display message if no orders match filter */}
+      {filteredOrders.length === 0 && (
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center bg-white p-8 rounded-xl shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No orders found</h3>
+            <p className="text-gray-500">
+              {searchTerm || filterStatus !== "All" 
+                ? "Try adjusting your search or filter criteria." 
+                : "Orders will appear here when customers place them."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Loop through each order and display */}
+      {filteredOrders.map((order) => (
         <div key={order._id} className="bg-white p-3 mb-4 rounded">
-          {/* Products List: các sản phẩm trong đơn hàng */}
+          {/* Products List: products in the order */}
           {order.items.map((item, idx) => (
             <div
               key={`${order._id}-${item.product?._id || idx}`}
@@ -374,7 +435,7 @@ const Orders = () => {
             >
               <div className="flex flex-[2] gap-x-3">
                 <div className="flex items-center justify-center bg-primary rounded">
-                  {/* Ảnh sản phẩm trong đơn */}
+                  {/* Product image in order */}
                   <img
                     src={item.product?.image?.[0] || '/placeholder.png'}
                     alt=""
@@ -383,11 +444,11 @@ const Orders = () => {
                 </div>
 
                 <div className="block w-full">
-                  {/* Tên sản phẩm */}
+                  {/* Product name */}
                   <h5 className="h5 capitalize line-clamp-1">
                     {item.product?.name || 'Product name unavailable'}
                   </h5>
-                  {/* Thông tin phụ: giá, số lượng, size */}
+                  {/* Additional info: price, quantity, size */}
                   <div className="flex flex-wrap gap-3 max-sm:gap-y-1 mt-1">
                     <div className="flex items-center gap-x-2">
                       <h5 className="medium-14">Price:</h5>
@@ -410,7 +471,7 @@ const Orders = () => {
             </div>
           ))}
 
-          {/* Order Summary: thông tin đơn hàng (id, khách, địa chỉ, trạng thái, ngày, tổng) */}
+          {/* Order Summary: order information (id, customer, address, status, date, total) */}
           <div className="flex flex-col lg:flex-row justify-between items-start gap-4 border-t border-gray-300 pt-3">
             <div className="flex flex-col gap-2 flex-1">
               <div className="flex items-center gap-x-2">
@@ -467,7 +528,7 @@ const Orders = () => {
 
             {/* Right side: Status selector và Action buttons */}
             <div className="flex flex-col gap-3 items-end">
-              {/* Select để thay đổi trạng thái đơn hàng */}
+              {/* Select to change order status */}
               <div className="flex items-center gap-2">
                 <h5 className="medium-14">Status:</h5>
                 <select
@@ -488,7 +549,7 @@ const Orders = () => {
                 <button
                   onClick={() => editOrder(order._id)}
                   className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors text-xs font-medium"
-                  title="Sửa đơn hàng"
+                  title="Edit order"
                 >
                   <FiEdit2 size={14} />
                   <span>Edit</span>
@@ -496,7 +557,7 @@ const Orders = () => {
                 <button
                   onClick={() => deleteOrder(order._id)}
                   className="flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors text-xs font-medium"
-                  title="Xóa đơn hàng"
+                  title="Delete order"
                 >
                   <FiTrash2 size={14} />
                   <span>Delete</span>
@@ -513,7 +574,7 @@ const Orders = () => {
           <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
-              <h3 className="text-xl font-bold text-gray-800">Tạo Đơn Hàng Mới</h3>
+              <h3 className="text-xl font-bold text-gray-800">Create New Order</h3>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -526,13 +587,13 @@ const Orders = () => {
             <form onSubmit={handleCreateOrder} className="p-6 space-y-6">
               {/* Select Customer */}
               <div>
-                <label className="block font-semibold mb-2">Chọn Khách Hàng (Tùy chọn)</label>
+                <label className="block font-semibold mb-2">Select Customer (Optional)</label>
                 <select
                   value={createForm.customerId}
                   onChange={(e) => handleCustomerSelect(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
                 >
-                  <option value="">-- Nhập thông tin thủ công --</option>
+                  <option value="">-- Enter information manually --</option>
                   {customers.map(customer => (
                     <option key={customer._id} value={customer._id}>
                       {customer.name} - {customer.email}
@@ -543,10 +604,10 @@ const Orders = () => {
 
               {/* Customer Information */}
               <div className="border-t pt-4">
-                <h4 className="font-semibold mb-3">Thông Tin Khách Hàng</h4>
+                <h4 className="font-semibold mb-3">Customer Information</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm mb-1">Họ *</label>
+                    <label className="block text-sm mb-1">First Name *</label>
                     <input
                       type="text"
                       value={createForm.address.firstName}
@@ -556,7 +617,7 @@ const Orders = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Tên *</label>
+                    <label className="block text-sm mb-1">Last Name *</label>
                     <input
                       type="text"
                       value={createForm.address.lastName}
@@ -575,7 +636,7 @@ const Orders = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Số Điện Thoại *</label>
+                    <label className="block text-sm mb-1">Phone Number *</label>
                     <input
                       type="tel"
                       value={createForm.address.phone}
@@ -585,7 +646,7 @@ const Orders = () => {
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm mb-1">Địa Chỉ *</label>
+                    <label className="block text-sm mb-1">Street Address *</label>
                     <input
                       type="text"
                       value={createForm.address.street}
@@ -595,7 +656,7 @@ const Orders = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Thành Phố *</label>
+                    <label className="block text-sm mb-1">City *</label>
                     <input
                       type="text"
                       value={createForm.address.city}
@@ -605,7 +666,7 @@ const Orders = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Quốc Gia</label>
+                    <label className="block text-sm mb-1">Country</label>
                     <input
                       type="text"
                       value={createForm.address.country}
@@ -618,14 +679,14 @@ const Orders = () => {
 
               {/* Add Products */}
               <div className="border-t pt-4">
-                <h4 className="font-semibold mb-3">Thêm Sản Phẩm</h4>
+                <h4 className="font-semibold mb-3">Add Products</h4>
                 <div className="grid grid-cols-4 gap-3 mb-3">
                   <select
                     value={selectedProduct}
                     onChange={(e) => setSelectedProduct(e.target.value)}
                     className="col-span-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
                   >
-                    <option value="">-- Chọn sản phẩm --</option>
+                    <option value="">-- Select product --</option>
                     {products.filter(p => p.inStock).map(product => (
                       <option key={product._id} value={product._id}>
                         {product.name} - {currency}{product.offerPrice}
@@ -650,7 +711,7 @@ const Orders = () => {
                     value={selectedQuantity}
                     onChange={(e) => setSelectedQuantity(Number(e.target.value))}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
-                    placeholder="SL"
+                    placeholder="Qty"
                   />
                 </div>
                 <button
@@ -658,20 +719,20 @@ const Orders = () => {
                   onClick={addProductToOrder}
                   className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
                 >
-                  Thêm Sản Phẩm
+                  Add Product
                 </button>
 
                 {/* Products List */}
                 {createForm.items.length > 0 && (
                   <div className="mt-4 space-y-2">
-                    <h5 className="font-medium">Sản phẩm đã thêm:</h5>
+                    <h5 className="font-medium">Added products:</h5>
                     {createForm.items.map((item, index) => (
                       <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <img src={item.productImage} alt="" className="w-12 h-12 object-cover rounded" />
                         <div className="flex-1">
                           <p className="font-medium text-sm">{item.productName}</p>
                           <p className="text-xs text-gray-600">
-                            Size: {item.size} | SL: {item.quantity} | Giá: {currency}{item.productPrice}
+                            Size: {item.size} | Qty: {item.quantity} | Price: {currency}{item.productPrice}
                           </p>
                         </div>
                         <button
@@ -689,14 +750,14 @@ const Orders = () => {
 
               {/* Payment Method */}
               <div className="border-t pt-4">
-                <label className="block font-semibold mb-2">Phương Thức Thanh Toán</label>
+                <label className="block font-semibold mb-2">Payment Method</label>
                 <select
                   value={createForm.paymentMethod}
                   onChange={(e) => setCreateForm({...createForm, paymentMethod: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
                 >
-                  <option value="COD">COD (Thanh toán khi nhận hàng)</option>
-                  <option value="Stripe">Stripe (Đã thanh toán)</option>
+                  <option value="COD">COD (Cash on Delivery)</option>
+                  <option value="Stripe">Stripe (Paid)</option>
                 </select>
               </div>
 
@@ -707,13 +768,13 @@ const Orders = () => {
                   onClick={() => setShowCreateModal(false)}
                   className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-colors"
                 >
-                  Hủy
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-secondary hover:bg-secondary/90 text-white font-medium rounded-lg transition-colors"
                 >
-                  Tạo Đơn Hàng
+                  Create Order
                 </button>
               </div>
             </form>
@@ -727,7 +788,7 @@ const Orders = () => {
           <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
-              <h3 className="text-xl font-bold text-gray-800">Chỉnh Sửa Đơn Hàng</h3>
+              <h3 className="text-xl font-bold text-gray-800">Edit Order</h3>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -740,7 +801,7 @@ const Orders = () => {
             <form onSubmit={handleUpdateOrder} className="p-6 space-y-4">
               {/* Order ID */}
               <div>
-                <label className="block font-semibold mb-1">Mã Đơn Hàng</label>
+                <label className="block font-semibold mb-1">Order ID</label>
                 <input
                   type="text"
                   value={editingOrder._id}
@@ -751,10 +812,10 @@ const Orders = () => {
 
               {/* Customer Address */}
               <div>
-                <h4 className="font-semibold mb-3">Thông Tin Khách Hàng</h4>
+                <h4 className="font-semibold mb-3">Customer Information</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm mb-1">Họ</label>
+                    <label className="block text-sm mb-1">First Name</label>
                     <input
                       type="text"
                       value={editForm.address.firstName}
@@ -763,7 +824,7 @@ const Orders = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Tên</label>
+                    <label className="block text-sm mb-1">Last Name</label>
                     <input
                       type="text"
                       value={editForm.address.lastName}
@@ -781,7 +842,7 @@ const Orders = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Số Điện Thoại</label>
+                    <label className="block text-sm mb-1">Phone Number</label>
                     <input
                       type="tel"
                       value={editForm.address.phone}
@@ -790,7 +851,7 @@ const Orders = () => {
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm mb-1">Địa Chỉ</label>
+                    <label className="block text-sm mb-1">Street Address</label>
                     <input
                       type="text"
                       value={editForm.address.street}
@@ -799,7 +860,7 @@ const Orders = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Thành Phố</label>
+                    <label className="block text-sm mb-1">City</label>
                     <input
                       type="text"
                       value={editForm.address.city}
@@ -808,7 +869,7 @@ const Orders = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Quốc Gia</label>
+                    <label className="block text-sm mb-1">Country</label>
                     <input
                       type="text"
                       value={editForm.address.country}
@@ -821,7 +882,7 @@ const Orders = () => {
 
               {/* Order Status */}
               <div>
-                <label className="block font-semibold mb-1">Trạng Thái Đơn Hàng</label>
+                <label className="block font-semibold mb-1">Order Status</label>
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm({...editForm, status: e.target.value})}
@@ -842,13 +903,13 @@ const Orders = () => {
                   onClick={() => setShowEditModal(false)}
                   className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-colors"
                 >
-                  Hủy
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-secondary hover:bg-secondary/90 text-white font-medium rounded-lg transition-colors"
                 >
-                  Cập Nhật
+                  Update
                 </button>
               </div>
             </form>

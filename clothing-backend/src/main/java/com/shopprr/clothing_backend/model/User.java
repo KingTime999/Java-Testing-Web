@@ -20,6 +20,7 @@ public class User {
     private String password;
     private String phone;
     private String address;
+    private Integer age;
     private LocalDate dateOfBirth;
     private String gender;
     private Map<String, Map<String, Integer>> cartData = new HashMap<>();

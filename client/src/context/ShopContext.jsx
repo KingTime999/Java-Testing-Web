@@ -24,7 +24,7 @@ export const ShopContext = createContext();
 // Đây là nơi chứa toàn bộ logic và trạng thái liên quan đến cửa hàng
 const ShopContextProvider = ({ children }) => {
   const navigate = useNavigate(); // Hàm điều hướng giữa các trang
-  const currency = import.meta.env.VITE_CURRENCY; // Đơn vị tiền tệ lấy từ biến môi trường
+  const currency = import.meta.env.VITE_CURRENCY || "$"; // Đơn vị tiền tệ lấy từ biến môi trường, mặc định là $
   const delivery_charges = 10; // Phí vận chuyển cố định là $10
   const [showUserLogin, setShowUserLogin] = useState(false); // State kiểm soát việc hiển thị/ẩn modal đăng nhập của người dùng.
   const [products, setProducts] = useState([]); // State lưu trữ tất cả sản phẩm từ backend
