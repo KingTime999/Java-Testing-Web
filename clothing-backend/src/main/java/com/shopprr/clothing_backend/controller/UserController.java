@@ -146,11 +146,16 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse> logout(HttpServletResponse response) {
         try {
+            // Clear cookie using standard Cookie API
             Cookie cookie = new Cookie("user_session", null);
-            cookie.setHttpOnly(true);
+            cookie.setHttpOnly(false);
             cookie.setPath("/");
             cookie.setMaxAge(0);
             response.addCookie(cookie);
+            
+            // Also clear cookie via header (to match login approach)
+            String clearCookieHeader = "user_session=; Path=/; Max-Age=0; SameSite=None";
+            response.addHeader("Set-Cookie", clearCookieHeader);
             
             return ResponseEntity.ok(new ApiResponse(true, "Logout successful"));
         } catch (Exception e) {

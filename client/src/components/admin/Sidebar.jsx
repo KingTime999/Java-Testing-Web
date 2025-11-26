@@ -9,8 +9,8 @@ import { ShopContext } from "../../context/ShopContext"; // Context để sử d
 import toast from "react-hot-toast"; // Thư viện thông báo
 
 const Sidebar = () => {
-  // Lấy navigate và axios từ context để sử dụng
-  const { navigate, axios } = useContext(ShopContext);
+  // Lấy navigate, axios và setIsAdmin từ context để sử dụng
+  const { navigate, axios, setIsAdmin } = useContext(ShopContext);
 
   // Hàm xử lý đăng xuất
   const logout = async () => {
@@ -18,17 +18,18 @@ const Sidebar = () => {
     // Gửi request đến API logout
     const {data} = await axios.post('/api/admin/logout')
     if(data.success){
-      // Nếu thành công, hiển thị thông báo và chuyển về trang chủ
+      // Nếu thành công, set isAdmin = false và chuyển về trang login admin
       console.log(data)
       toast.success(data.message)
-      navigate('/');
+      setIsAdmin(false) // Set lại isAdmin để hiển thị AdminLogin
+      navigate('/admin');
     }else{
       // Nếu thất bại, hiển thị lỗi
       toast.error(data.message)
     }
    } catch (error) {
     // Xử lý lỗi nếu có
-    toast.error(data.message)
+    toast.error(error.response?.data?.message || 'Logout failed')
    }
   };
 

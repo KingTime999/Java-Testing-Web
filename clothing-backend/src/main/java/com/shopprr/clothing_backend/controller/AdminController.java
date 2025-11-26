@@ -100,6 +100,27 @@ public class AdminController {
         }
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse> logout(HttpServletResponse response) {
+        try {
+            // Clear cookie using standard Cookie API
+            jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("user_session", null);
+            cookie.setHttpOnly(false);
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+            
+            // Also clear cookie via header (to match login approach)
+            String clearCookieHeader = "user_session=; Path=/; Max-Age=0; SameSite=Lax";
+            response.addHeader("Set-Cookie", clearCookieHeader);
+            
+            return ResponseEntity.ok(new ApiResponse(true, "Logout successful"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error during logout: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/orders")
     public ResponseEntity<ApiResponse> getAllOrders(@CookieValue(value = "user_session", required = false) String userId) {
         try {

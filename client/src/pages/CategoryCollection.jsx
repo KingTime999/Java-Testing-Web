@@ -57,11 +57,18 @@ const CategoryCollection = () => {
     // Filter by category name (đã convert từ slug)
     if (categoryName) {
       console.log('  - Filtering by category:', categoryName);
+      console.log('  - All products with their categories:');
+      products.forEach(p => {
+        console.log(`    📦 "${p.name}": category="${p.category}"`);
+      });
+      
       result = result.filter(
         (product) => {
           const matches = product.category === categoryName;
           if (!matches) {
             console.log(`    ❌ Product "${product.name}" (${product.category}) does not match "${categoryName}"`);
+          } else {
+            console.log(`    ✅ Product "${product.name}" MATCHES!`);
           }
           return matches;
         }

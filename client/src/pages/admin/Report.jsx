@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from "react" // import hooks cần thiết
-import { toast } from "react-hot-toast" // import toast để hiển thị thông báo
+import React, { useContext, useEffect, useState } from "react" // import necessary hooks
+import { toast } from "react-hot-toast" // import toast for notifications
 import { ShopContext } from "../../context/ShopContext" // import ShopContext
 import { 
   FiDollarSign, 
@@ -21,12 +21,12 @@ import {
   PieChart,
   Pie,
   Cell
-} from "recharts" // import recharts để vẽ biểu đồ
+} from "recharts" // import recharts for charts
 
-// Component hiển thị báo cáo thống kê (Admin)
+// Component to display statistics report (Admin)
 const Report = () => {
-  const { axios, currency } = useContext(ShopContext) // lấy axios và currency từ context
-  const [loading, setLoading] = useState(true) // state loading
+  const { axios, currency } = useContext(ShopContext) // get axios and currency from context
+  const [loading, setLoading] = useState(true) // loading state
   const [reportData, setReportData] = useState({
     totalRevenue: 0,
     totalOrders: 0,
@@ -37,23 +37,23 @@ const Report = () => {
     ordersByStatus: {}
   })
 
-  // State cho biểu đồ
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()) // năm được chọn cho biểu đồ cột
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1) // tháng được chọn cho biểu đồ tròn
-  const [selectedYearForPie, setSelectedYearForPie] = useState(new Date().getFullYear()) // năm được chọn cho biểu đồ tròn
-  const [monthlyRevenue, setMonthlyRevenue] = useState([]) // dữ liệu doanh thu theo tháng
-  const [categoryData, setCategoryData] = useState([]) // dữ liệu category theo tháng
-  const [availableYears, setAvailableYears] = useState([]) // danh sách năm có sẵn
+  // State for charts
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()) // selected year for bar chart
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1) // selected month for pie chart
+  const [selectedYearForPie, setSelectedYearForPie] = useState(new Date().getFullYear()) // selected year for pie chart
+  const [monthlyRevenue, setMonthlyRevenue] = useState([]) // monthly revenue data
+  const [categoryData, setCategoryData] = useState([]) // category data by month
+  const [availableYears, setAvailableYears] = useState([]) // list of available years
 
-  // Màu sắc cho biểu đồ tròn
+  // Colors for pie chart
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B9D']
 
-  // Hàm fetchReportData: lấy dữ liệu báo cáo từ server
+  // Function fetchReportData: fetch report data from server
   const fetchReportData = async () => {
     try {
       setLoading(true)
       
-      // Gọi các API để lấy dữ liệu
+      // Call APIs to fetch data
       const [ordersRes, customersRes, productsRes] = await Promise.all([
         axios.post("/api/order/list"),
         axios.get("/api/user/list-all"),
@@ -65,23 +65,23 @@ const Report = () => {
         const customers = customersRes.data.data.users
         const products = productsRes.data.products
 
-        // Tính tổng doanh thu (chỉ tính đơn đã thanh toán HOẶC có status Done)
+        // Calculate total revenue (only paid orders OR orders with status Done)
         const totalRevenue = orders
           .filter(order => order.isPaid || order.status === 'Done')
           .reduce((sum, order) => sum + order.amount, 0)
 
-        // Đếm đơn hàng theo trạng thái
+        // Count orders by status
         const ordersByStatus = orders.reduce((acc, order) => {
           acc[order.status] = (acc[order.status] || 0) + 1
           return acc
         }, {})
 
-        // Lấy 5 đơn hàng gần nhất
+        // Get 5 most recent orders
         const recentOrders = orders
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .slice(0, 5)
 
-        // Tính sản phẩm bán chạy (từ đơn hàng)
+        // Calculate best-selling products (from orders)
         const productSales = {}
         orders.forEach(order => {
           order.items.forEach(item => {
@@ -92,7 +92,7 @@ const Report = () => {
           })
         })
 
-        // Sắp xếp và lấy top 5 sản phẩm
+        // Sort and get top 5 products
         const topProducts = Object.entries(productSales)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5)
@@ -100,7 +100,7 @@ const Report = () => {
             const product = products.find(p => p._id === productId)
             return { product, quantity }
           })
-          .filter(item => item.product) // Loại bỏ sản phẩm không tìm thấy
+          .filter(item => item.product) // Remove products not found
 
         setReportData({
           totalRevenue,
@@ -112,31 +112,31 @@ const Report = () => {
           ordersByStatus
         })
 
-        // Tính toán dữ liệu cho biểu đồ
+        // Calculate chart data
         calculateChartData(orders, products)
 
         console.log("✅ Loaded report data")
       } else {
-        toast.error("Không thể tải dữ liệu báo cáo")
+        toast.error("Failed to load report data")
       }
     } catch (error) {
       console.log("❌ Fetch report error:", error)
-      toast.error(error.message || "Lỗi khi tải báo cáo")
+      toast.error(error.message || "Error loading report")
     } finally {
       setLoading(false)
     }
   }
 
-  // Hàm tính toán dữ liệu cho biểu đồ
+  // Function to calculate chart data
   const calculateChartData = (orders, products) => {
-    // Lấy danh sách các năm có đơn hàng
+    // Get list of years with orders
     const years = [...new Set(orders.map(order => new Date(order.createdAt).getFullYear()))]
       .sort((a, b) => b - a)
     setAvailableYears(years)
 
-    // Tính doanh thu theo tháng cho năm được chọn
+    // Calculate monthly revenue for selected year
     const revenueByMonth = Array.from({ length: 12 }, (_, i) => ({
-      month: `Tháng ${i + 1}`,
+      month: `Month ${i + 1}`,
       revenue: 0
     }))
 
@@ -154,11 +154,11 @@ const Report = () => {
 
     setMonthlyRevenue(revenueByMonth)
 
-    // Tính số lượng bán theo category cho tháng được chọn
+    // Calculate sales by category for selected month
     const categorySales = {}
 
     orders.forEach(order => {
-      // Chỉ tính đơn hàng đã thanh toán HOẶC có status Done
+      // Only count paid orders OR orders with status Done
       if (order.isPaid || order.status === 'Done') {
         const orderDate = new Date(order.createdAt)
         const orderYear = orderDate.getFullYear()
@@ -167,7 +167,7 @@ const Report = () => {
         if (orderYear === selectedYearForPie && orderMonth === selectedMonth) {
           order.items.forEach(item => {
             if (item.product) {
-              const category = item.product.category || 'Khác'
+              const category = item.product.category || 'Other'
               categorySales[category] = (categorySales[category] || 0) + item.quantity
             }
           })
@@ -183,10 +183,10 @@ const Report = () => {
     setCategoryData(categoryArray)
   }
 
-  // Effect để tính lại dữ liệu khi thay đổi năm/tháng
+  // Effect to recalculate data when year/month changes
   useEffect(() => {
     if (reportData.totalOrders > 0) {
-      // Fetch lại orders và products để tính toán
+      // Refetch orders and products for calculation
       const refetchData = async () => {
         try {
           const [ordersRes, productsRes] = await Promise.all([
@@ -206,16 +206,16 @@ const Report = () => {
   }, [selectedYear, selectedMonth, selectedYearForPie])
 
   useEffect(() => {
-    fetchReportData() // gọi khi component mount
+    fetchReportData() // call when component mounts
   }, [])
 
-  // Hiển thị loading spinner
+  // Display loading spinner
   if (loading) {
     return (
       <div className="px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl flex items-center justify-center custom-scrollbar">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-          <p className="mt-3 text-gray-600">Đang tải báo cáo...</p>
+          <p className="mt-3 text-gray-600">Loading report...</p>
         </div>
       </div>
     )
@@ -225,17 +225,17 @@ const Report = () => {
     <div className="px-2 sm:px-6 py-12 m-2 h-[97vh] bg-primary overflow-y-scroll lg:w-4/5 rounded-xl custom-scrollbar">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Báo Cáo Thống Kê</h2>
-        <p className="text-gray-600 text-sm mt-1">Tổng quan hoạt động kinh doanh</p>
+        <h2 className="text-2xl font-bold text-gray-800">Statistics Report</h2>
+        <p className="text-gray-600 text-sm mt-1">Business activity overview</p>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Tổng doanh thu */}
+        {/* Total Revenue */}
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Tổng Doanh Thu</p>
+              <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Total Revenue</p>
               <h3 className="text-2xl font-bold text-gray-800">
                 {currency}{reportData.totalRevenue.toLocaleString()}
               </h3>
@@ -246,11 +246,11 @@ const Report = () => {
           </div>
         </div>
 
-        {/* Tổng đơn hàng */}
+        {/* Total Orders */}
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Tổng Đơn Hàng</p>
+              <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Total Orders</p>
               <h3 className="text-2xl font-bold text-gray-800">{reportData.totalOrders}</h3>
             </div>
             <div className="p-3 bg-blue-100 rounded-full">
@@ -259,11 +259,11 @@ const Report = () => {
           </div>
         </div>
 
-        {/* Tổng khách hàng */}
+        {/* Total Customers */}
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Tổng Khách Hàng</p>
+              <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Total Customers</p>
               <h3 className="text-2xl font-bold text-gray-800">{reportData.totalCustomers}</h3>
             </div>
             <div className="p-3 bg-purple-100 rounded-full">
@@ -272,11 +272,11 @@ const Report = () => {
           </div>
         </div>
 
-        {/* Tổng sản phẩm */}
+        {/* Total Products */}
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Tổng Sản Phẩm</p>
+              <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Total Products</p>
               <h3 className="text-2xl font-bold text-gray-800">{reportData.totalProducts}</h3>
             </div>
             <div className="p-3 bg-orange-100 rounded-full">
@@ -286,12 +286,12 @@ const Report = () => {
         </div>
       </div>
 
-      {/* Biểu đồ doanh thu theo tháng */}
+      {/* Monthly Revenue Chart */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <FiTrendingUp className="text-gray-700" size={20} />
-            <h3 className="text-lg font-bold text-gray-800">Doanh Thu Theo Tháng</h3>
+            <h3 className="text-lg font-bold text-gray-800">Monthly Revenue</h3>
           </div>
           <select
             value={selectedYear}
@@ -299,7 +299,7 @@ const Report = () => {
             className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
           >
             {availableYears.map(year => (
-              <option key={year} value={year}>Năm {year}</option>
+              <option key={year} value={year}>Year {year}</option>
             ))}
           </select>
         </div>
@@ -310,17 +310,17 @@ const Report = () => {
             <YAxis />
             <Tooltip formatter={(value) => `${currency}${value.toLocaleString()}`} />
             <Legend />
-            <Bar dataKey="revenue" fill="#8884d8" name="Doanh thu" />
+            <Bar dataKey="revenue" fill="#8884d8" name="Revenue" />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Biểu đồ category bán chạy theo tháng */}
+      {/* Best-selling Categories by Month */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <FiPackage className="text-gray-700" size={20} />
-            <h3 className="text-lg font-bold text-gray-800">Danh Mục Bán Chạy</h3>
+            <h3 className="text-lg font-bold text-gray-800">Best-selling Categories</h3>
           </div>
           <div className="flex gap-2">
             <select
@@ -329,7 +329,7 @@ const Report = () => {
               className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
             >
               {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>
+                <option key={i + 1} value={i + 1}>Month {i + 1}</option>
               ))}
             </select>
             <select
@@ -338,7 +338,7 @@ const Report = () => {
               className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
             >
               {availableYears.map(year => (
-                <option key={year} value={year}>Năm {year}</option>
+                <option key={year} value={year}>Year {year}</option>
               ))}
             </select>
           </div>
@@ -361,7 +361,7 @@ const Report = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `${value} sản phẩm`} />
+                <Tooltip formatter={(value) => `${value} products`} />
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-2">
@@ -371,25 +371,25 @@ const Report = () => {
                     className="w-4 h-4 rounded" 
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   ></div>
-                  <span className="text-sm text-gray-700">{entry.name}: {entry.value} sản phẩm</span>
+                  <span className="text-sm text-gray-700">{entry.name}: {entry.value} products</span>
                 </div>
               ))}
             </div>
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            Không có dữ liệu cho tháng {selectedMonth}/{selectedYearForPie}
+            No data for month {selectedMonth}/{selectedYearForPie}
           </div>
         )}
       </div>
 
       {/* Two columns layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Đơn hàng theo trạng thái */}
+        {/* Orders by Status */}
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <FiTrendingUp className="text-gray-700" size={20} />
-            <h3 className="text-lg font-bold text-gray-800">Đơn Hàng Theo Trạng Thái</h3>
+            <h3 className="text-lg font-bold text-gray-800">Orders by Status</h3>
           </div>
           <div className="space-y-3">
             {Object.entries(reportData.ordersByStatus).map(([status, count]) => (
@@ -413,11 +413,11 @@ const Report = () => {
           </div>
         </div>
 
-        {/* Top sản phẩm bán chạy */}
+        {/* Top Best-selling Products */}
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <FiPackage className="text-gray-700" size={20} />
-            <h3 className="text-lg font-bold text-gray-800">Top Sản Phẩm Bán Chạy</h3>
+            <h3 className="text-lg font-bold text-gray-800">Top Best-selling Products</h3>
           </div>
           <div className="space-y-3">
             {reportData.topProducts.map((item, index) => (
@@ -440,7 +440,7 @@ const Report = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-gray-800">{item.quantity}</p>
-                  <p className="text-xs text-gray-500">đã bán</p>
+                  <p className="text-xs text-gray-500">sold</p>
                 </div>
               </div>
             ))}
@@ -448,30 +448,30 @@ const Report = () => {
         </div>
       </div>
 
-      {/* Đơn hàng gần nhất */}
+      {/* Recent Orders */}
       <div className="bg-white p-4 rounded-lg shadow-sm mt-6">
         <div className="flex items-center gap-2 mb-4">
           <FiCalendar className="text-gray-700" size={20} />
-          <h3 className="text-lg font-bold text-gray-800">Đơn Hàng Gần Nhất</h3>
+          <h3 className="text-lg font-bold text-gray-800">Recent Orders</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase py-3 px-2">
-                  Mã Đơn
+                  Order ID
                 </th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase py-3 px-2">
-                  Khách Hàng
+                  Customer
                 </th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase py-3 px-2">
-                  Tổng Tiền
+                  Total
                 </th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase py-3 px-2">
-                  Trạng Thái
+                  Status
                 </th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase py-3 px-2">
-                  Ngày Đặt
+                  Order Date
                 </th>
               </tr>
             </thead>

@@ -479,7 +479,7 @@ const List = () => {
           <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
-              <h3 className="text-xl font-bold text-gray-800">Chỉnh Sửa Sản Phẩm</h3>
+              <h3 className="text-xl font-bold text-gray-800">Edit Product</h3>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -492,7 +492,7 @@ const List = () => {
             <form onSubmit={handleUpdateProduct} className="p-6 space-y-4">
               {/* Product Image Preview */}
               <div>
-                <h5 className="font-semibold mb-2">Ảnh Hiện Tại</h5>
+                <h5 className="font-semibold mb-2">Current Images</h5>
                 <div className="flex gap-2 flex-wrap">
                   {editingProduct.image.map((img, idx) => (
                     <img
@@ -507,31 +507,31 @@ const List = () => {
 
               {/* Product Name */}
               <div>
-                <label className="block font-semibold mb-1">Tên Sản Phẩm *</label>
+                <label className="block font-semibold mb-1">Product Name *</label>
                 <input
                   type="text"
                   value={editForm.name}
                   onChange={(e) => setEditForm({...editForm, name: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
-                  placeholder="Nhập tên sản phẩm"
+                  placeholder="Enter product name"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block font-semibold mb-1">Mô Tả *</label>
+                <label className="block font-semibold mb-1">Description *</label>
                 <textarea
                   value={editForm.description}
                   onChange={(e) => setEditForm({...editForm, description: e.target.value})}
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
-                  placeholder="Nhập mô tả sản phẩm"
+                  placeholder="Enter product description"
                 />
               </div>
 
               {/* Category */}
               <div>
-                <label className="block font-semibold mb-1">Danh Mục *</label>
+                <label className="block font-semibold mb-1">Category *</label>
                 <select
                   value={editForm.category}
                   onChange={(e) => setEditForm({...editForm, category: e.target.value})}
@@ -549,7 +549,7 @@ const List = () => {
               {/* Price & Offer Price */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-semibold mb-1">Giá Gốc *</label>
+                  <label className="block font-semibold mb-1">Original Price *</label>
                   <input
                     type="number"
                     value={editForm.price}
@@ -559,7 +559,7 @@ const List = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Giá Khuyến Mãi *</label>
+                  <label className="block font-semibold mb-1">Offer Price *</label>
                   <input
                     type="number"
                     value={editForm.offerPrice}
@@ -598,13 +598,13 @@ const List = () => {
                   onClick={() => setShowEditModal(false)}
                   className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-colors"
                 >
-                  Hủy
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-secondary hover:bg-secondary/90 text-white font-medium rounded-lg transition-colors"
                 >
-                  Cập Nhật
+                  Update
                 </button>
               </div>
             </form>

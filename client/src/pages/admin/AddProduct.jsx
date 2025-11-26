@@ -12,7 +12,7 @@ const AddProduct = () => {
   const [description, setDescription] = useState("") // mô tả sản phẩm
   const [price, setPrice] = useState("10") // giá gốc
   const [offerPrice, setOfferPrice] = useState('10') // giá khuyến mãi
-  const [category, setCategory] = useState("Shirts & Polo") // danh mục mặc định
+  const [category, setCategory] = useState("Shirts & Polos") // danh mục mặc định - FIXED: khớp với categories collection
   const [popular, setPopular] = useState(false) // flag sản phẩm popular
   const [sizes, setSizes] = useState([]) // mảng size được chọn
 
@@ -82,10 +82,10 @@ const AddProduct = () => {
               <div>
                 <h5 className='h5'>Category</h5>
                 <select onChange={(e) => setCategory(e.target.value)} className='max-w-40 px-3 py-2 text-gray-30 ring-1 ring-slate-900/5 bg-white rounded'>
-                  <option value="Shirts & Polo">Shirts & Polo</option>
+                  <option value="Shirts & Polos">Shirts & Polos</option>
                   <option value="Bottoms">Bottoms</option>
                   <option value="Outerwear">Outerwear</option>
-                  <option value="InnerWear & Underwear">InnerWear & Underwear</option>
+                  <option value="Innerwear & Underwear">Innerwear & Underwear</option>
                   <option value="Shoes">Shoes</option>
                   <option value="Accessories">Accessories</option>
                 </select>

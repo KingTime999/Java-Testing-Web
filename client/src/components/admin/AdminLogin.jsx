@@ -20,7 +20,14 @@ const AdminLogin = () => {
           toast.error(data.message)
         }
        } catch (error) {
-        toast.error(error.message)
+        // Xử lý lỗi từ backend (403 = không có quyền admin)
+        if(error.response && error.response.status === 403){
+          toast.error("You don't have permission to access admin panel")
+        } else if(error.response && error.response.data && error.response.data.message){
+          toast.error(error.response.data.message)
+        } else {
+          toast.error("Login failed. Please try again.")
+        }
        }
     }
 
